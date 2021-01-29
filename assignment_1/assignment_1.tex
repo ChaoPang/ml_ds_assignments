@@ -17,24 +17,26 @@ model this sequence as i.i.d. from a Poisson distribution with unknown parameter
 
 \[ p(X|\lambda) = \frac{ \lambda^X}{X!}e^-\lambda \]
 
-(a) Solution:
+\begin{flushleft}
+(a) Solution: 
+\end{flushleft}
 
 \begin{center}
-Let $L(\theta; x_1, x_2 ..., x_i)  \sim$ joint likelihood
+Let $L(\lambda; x_1, x_2 ..., x_i)  \sim$ joint likelihood
 \end{center}
 
 \begin{equation*}
 \begin{split}
-L(\theta; x_1, x_2 ..., x_i)  & = \prod_{i=1}^N p(X=x_i| \lambda) \\
+L(\lambda; x_1, x_2 ..., x_i)  & = \prod_{i=1}^N p(X=x_i| \lambda) \\
 &  = \prod_{i=1}^N\frac{\lambda^{x_i}}{x_i!} e^{-\lambda} \\
 \end{split}
 \end{equation*}
 
 
+\begin{flushleft}
 (b) Solution: 
-\begin{center}
 Use the logarithmic trick on the likelihood function
-\end{center}
+\end{flushleft}
 
 \begin{equation*}
 \begin{split}
@@ -44,9 +46,9 @@ Use the logarithmic trick on the likelihood function
 \end{split}
 \end{equation*}
 
-\begin{center}
-Take the derivative w.r.t $\boldsymbol{\lambda}$, set the gradient to 0, then solve $\boldsymbol{\lambda}$
-\end{center}
+\begin{flushleft}
+Take the derivative w.r.t $\boldsymbol{\lambda}$, set the gradient to 0, then solve $\boldsymbol{\lambda}$. The solution is equal to the sample mean. 
+\end{flushleft}
 
 \begin{equation*}
 \nabla_{\lambda_{ML}} = {\frac{\sum_{i=1}^N{x_i}}{\lambda}} - N = 0
@@ -54,6 +56,39 @@ Take the derivative w.r.t $\boldsymbol{\lambda}$, set the gradient to 0, then so
 
 \begin{equation*}
 \lambda_{ML} = {\frac{\sum_{i=1}^N{x_i}}{N}}
+\end{equation*}
+
+\begin{flushleft}
+(c) Solution: 
+\end{flushleft}
+
+\begin{align*} 
+& \textit{Bayes Rule:} \;\;  p(\lambda|X) = \frac{p(X|\lambda) p(\lambda|a,b)}{\int_{0}^{\infty} p(X|\lambda) p(\lambda|a,b) d\lambda} = \frac{p(X|\lambda) p(\lambda|a,b)}{p(X)} \\
+&\textit{Let} \;\; p(\lambda|a, b)  = \frac{b^a\lambda^{a-1}e^{-b\lambda}}{\Gamma(a)} \textit{ for a, b $>$ 0 $\lambda$ $>$ 0} \\
+&\textit{Let} \;\; p(X|\lambda) = \prod_{i=1}^N\frac{\lambda^{x_i}}{x_i!} e^{-\lambda} \\
+\end{align*}
+
+\begin{flushleft}
+Then we have the following, again using the logarithmic trick
+\end{flushleft}
+
+\begin{equation*}
+\begin{split}
+\lambda_{MAP} & = \underset{\lambda}{\mathrm{argmax}} \; \ln{(\prod_{i=1}^N\frac{\lambda^{x_i}}{x_i!} e^{-\lambda} \frac{b^a\lambda^{a-1}e^{-b\lambda}}{\Gamma(a)})} \\
+& = \underset{\lambda}{\mathrm{argmax}} \; {\sum_{i=1}^N{x_i}\ln{\lambda} }  - {N\lambda}  -  {\sum_{i=1}^N\ln{x_i!}} + a\ln{b} + (a-1)\ln{\lambda} - b\lambda - \ln{\Gamma(a)}\\
+\end{split}
+\end{equation*}
+
+\begin{flushleft}
+Next, take the derivative w.r.t $\boldsymbol{\lambda}$, set the gradient to 0, then solve $\boldsymbol{\lambda}$.
+\end{flushleft}
+
+\begin{equation*}
+\nabla_{\lambda_{MAP}} = {\frac{\sum_{i=1}^N{x_i}}{\lambda}} - N + \frac{a-1}{\lambda} - b = 0
+\end{equation*}
+
+\begin{equation*}
+\lambda_{MAP} = \frac{{\sum_{i=1}^N{x_i}} + a - 1}{N + b}
 \end{equation*}
 
 \end{document}
