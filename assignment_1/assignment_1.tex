@@ -1,0 +1,59 @@
+\documentclass{article}
+ 
+\usepackage{amssymb}
+\usepackage{amsmath}
+
+\begin{document}
+
+\title{COMS 4721: Machine Learning for Data Science 
+Home work 1}
+\author{Chao Pang}
+ 
+\maketitle
+
+\section{Problem 1}
+Imagine you have a sequence of N observations $(x_1,...,x_N)$, where each $x_i \in \{0,1,2,...,\infty\}$. You
+model this sequence as i.i.d. from a Poisson distribution with unknown parameter $\lambda \in \mathbb{R}_+$, where
+
+\[ p(X|\lambda) = \frac{ \lambda^X}{X!}e^-\lambda \]
+
+(a) Solution:
+
+\begin{center}
+Let $L(\theta; x_1, x_2 ..., x_i)  \sim$ joint likelihood
+\end{center}
+
+\begin{equation*}
+\begin{split}
+L(\theta; x_1, x_2 ..., x_i)  & = \prod_{i=1}^N p(X=x_i| \lambda) \\
+&  = \prod_{i=1}^N\frac{\lambda^{x_i}}{x_i!} e^{-\lambda} \\
+\end{split}
+\end{equation*}
+
+
+(b) Solution: 
+\begin{center}
+Use the logarithmic trick on the likelihood function
+\end{center}
+
+\begin{equation*}
+\begin{split}
+\lambda_{ML} & = \underset{\lambda}{\mathrm{argmax}} \; \ln{(\prod_{i=1}^N\frac{\lambda^{x_i}}{x_i!} e^{-\lambda})} \\
+& = \underset{\lambda}{\mathrm{argmax}} \; {\sum_{i=1}^N{x_i}\ln{\lambda} }  - {\sum_{i=1}^N \lambda}  -  {\sum_{i=1}^N\ln{x_i!}}\\
+& = \underset{\lambda}{\mathrm{argmax}} \; {\sum_{i=1}^N{x_i}\ln{\lambda} }  - {N\lambda}  -  {\sum_{i=1}^N\ln{x_i!}}\\
+\end{split}
+\end{equation*}
+
+\begin{center}
+Take the derivative w.r.t $\boldsymbol{\lambda}$, set the gradient to 0, then solve $\boldsymbol{\lambda}$
+\end{center}
+
+\begin{equation*}
+\nabla_{\lambda_{ML}} = {\frac{\sum_{i=1}^N{x_i}}{\lambda}} - N = 0
+\end{equation*}
+
+\begin{equation*}
+\lambda_{ML} = {\frac{\sum_{i=1}^N{x_i}}{N}}
+\end{equation*}
+
+\end{document}
