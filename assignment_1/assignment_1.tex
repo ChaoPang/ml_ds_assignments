@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass[11pt]{report}
  
 \usepackage{amssymb}
 \usepackage{amsmath}
@@ -41,7 +41,6 @@ Use the logarithmic trick on the likelihood function
 \begin{equation*}
 \begin{split}
 \lambda_{ML} & = \underset{\lambda}{\mathrm{argmax}} \; \ln{(\prod_{i=1}^N\frac{\lambda^{x_i}}{x_i!} e^{-\lambda})} \\
-& = \underset{\lambda}{\mathrm{argmax}} \; {\sum_{i=1}^N{x_i}\ln{\lambda} }  - {\sum_{i=1}^N \lambda}  -  {\sum_{i=1}^N\ln{x_i!}}\\
 & = \underset{\lambda}{\mathrm{argmax}} \; {\sum_{i=1}^N{x_i}\ln{\lambda} }  - {N\lambda}  -  {\sum_{i=1}^N\ln{x_i!}}\\
 \end{split}
 \end{equation*}
@@ -57,7 +56,7 @@ Take the derivative w.r.t $\boldsymbol{\lambda}$, set the gradient to 0, then so
 \begin{equation*}
 \lambda_{ML} = {\frac{\sum_{i=1}^N{x_i}}{N}}
 \end{equation*}
-
+\\
 \begin{flushleft}
 (c) Solution: 
 \end{flushleft}
@@ -91,8 +90,9 @@ Next, take the derivative w.r.t $\boldsymbol{\lambda}$, set the gradient to 0, t
 \lambda_{MAP} = \frac{{\sum_{i=1}^N{x_i}} + a - 1}{N + b}
 \end{equation*}
 
-\begin{flushleft}
+ \pagebreak
 
+\begin{flushleft}
 (d) Solution: the prior gamma distribution is conjugate to the likelihood function, therefore the posterior is a gamma distribution as well. 
 \end{flushleft}
 \begin{equation*}
@@ -106,8 +106,9 @@ p(\lambda|X) &\propto p(X|\lambda) p(\lambda|a,b) \\
 \end{split}
 \end{equation*}
 
+\begin{flushleft}
 (e) Solution
-
+\end{flushleft}
 \begin{align*}
 &\textit{Let $p(\lambda|X) \sim Gamma(\hat{a}, \hat{b})$ \; for $\hat{a} = \sum_{i=1}^Nx_i + a$ , $\hat{b} = b+ N $} \\
 &\textit{We have $\sim Var[\lambda|X] = E[\lambda^2] - E[\lambda]^2$}
@@ -119,6 +120,11 @@ E[\lambda|X] &= \int^{\infty}_0\frac{ \hat{b}^{\hat{a} } \lambda^{\hat{a} - 1} e
 &= \frac{\hat{a}}{\hat{b}} \int^{\infty}_0 \frac{\hat{b}^{\hat{a} + 1} \lambda^{\hat{a}} e^{-\lambda \hat{b}} }{\Gamma{(\hat{a} + 1)}} d\lambda \\
 &= \frac{\hat{a}}{\hat{b}} \int^{\infty}_0 Gamma(\lambda|\hat{a} + 1, \hat{b}) d\lambda \\
 &= \frac{\hat{a}}{\hat{b}} = \frac{{\sum_{i=1}^N{x_i}} + a}{N + b} \\
+\end{split} 
+\end{equation*}
+
+\begin{equation*}
+\begin{split}
 E[\lambda^2|X] &= \int^{\infty}_0\frac{ \hat{b}^{\hat{a} } \lambda^{\hat{a} - 1} e^{-\lambda\hat{b}}}{\Gamma(\hat{a})} \lambda^2 d\lambda \\
 &= \frac{\hat{a} (\hat{a} + 1)}{\hat{b}^2} \int^{\infty}_0 \frac{\hat{b}^{\hat{a} + 2} \lambda^{\hat{a} + 1} e^{-\lambda \hat{b}} }{\Gamma{(\hat{a} + 2)}} d\lambda \\
 &= \frac{\hat{a} (\hat{a} + 1)}{\hat{b}^2} \int^{\infty}_0 Gamma(\lambda|\hat{a} + 2, \hat{b}) d\lambda \\
@@ -132,5 +138,57 @@ The relations between $\lambda_{ML}$, $\lambda_{MAP}$, and $E[\lambda|X]$ is des
 \item $\lambda_{MAP}$ and $E[\lambda|X]$ are almost identical to each other. $\lambda_{MAP}$ is $\frac{1}{N}$ smaller than $E[\lambda|X]$. As the number of observation N increases, $\lambda_{MAP}$ approaches $E[\lambda|X]$
 \item in the limit as $a \xrightarrow{} 0$ and $b \xrightarrow{} 0$, $E[\lambda|X]$ approaches $\lambda_{ML}$
 \end{itemize}
+
+\section{Problem 2}
+(a) You have data $(x_i; y_i)$ for i = 1,..., n, where x $\in  \mathbb{R}$ and y $\in \mathbb{R}$. You model this as $y_i \stackrel{iid}{\sim} N(x_i^Tw; \sigma^2)$. You use the data you have to approximate w with $w_{RR}= (\lambda I + X^TX)^{-1}X^T y$ , where X
+and y are defined as in the lectures. Derive the results for $\mathbb{E}[w_{RR}]$ and $\mathbb{V}[w_{RR}]$ given in the slides.
+
+\begin{flushleft}
+Solution: the subscript RR is dropped from the parameter $w_{RR}$ to keep the notation uncluttered
+\end{flushleft}
+\begin{equation*}
+\begin{split}
+E[w] &=  E[(\lambda I + X^TX)^{-1}X^T y] \\
+&= (\lambda I + X^TX)^{-1}X^T E[y] \\
+&= (\lambda I + X^TX)^{-1}X^TXw \\
+\\
+Var[w] &=  E[(w - E[w])(w - E[w])^T] \\
+&=  E[w w^T] - E[w]E[w]^T \\
+\end{split} 
+\end{equation*}
+
+\begin{flushleft}
+Plug in $w_{RR}$ into $Var[w]$
+\end{flushleft}
+
+\begin{equation*}
+\begin{split}
+Var[w] =  &E[(\lambda I + X^TX)^{-1}X^Ty  y^T X (\lambda I + X^TX)^{-1}] \\
+& - (\lambda I + X^TX)^{-1}X^TXw w^T X^T X (\lambda I + X^TX)^{-1}\\
+= &(\lambda I + X^TX)^{-1}X^T E[y y^T] X (\lambda I + X^TX)^{-1}] \\
+& - (\lambda I + X^TX)^{-1}X^TXw w^T X^T X (\lambda I + X^TX)^{-1}\\
+\end{split} 
+\end{equation*}
+
+\begin{flushleft}
+Plug in $E[yy^T] = \sigma^2I + Xww^TX^T$
+\end{flushleft}
+
+\begin{equation*}
+\begin{split}
+Var[w] = &(\lambda I + X^TX)^{-1}X^T (\sigma^2I + Xww^TX^T) X (\lambda I + X^TX)^{-1} \\
+& - (\lambda I + X^TX)^{-1}X^TXw w^T X^T X (\lambda I + X^TX)^{-1}\\
+= &(\lambda I + X^TX)^{-1}X^T \sigma^2I X (\lambda I + X^TX)^{-1}  \\
+= &\sigma^2 (\lambda I + X^TX)^{-1}X^T X (\lambda I + X^TX)^{-1}  \\
+= &\sigma^2 (\lambda X^TX(X^TX)^{-1} + X^TX)^{-1}X^T X(\lambda X^TX(X^TX)^{-1} + X^TX)^{-1}  \\
+= &\sigma^2 (X^TX(\lambda (X^TX)^{-1} + I))^{-1}X^T X (X^TX(\lambda (X^TX)^{-1} + I))^{-1}  \\
+= &\sigma^2 (\lambda (X^TX)^{-1} + I)^{-1} (X^TX)^{-1} X^T X (\lambda (X^TX)^{-1} + I)^{-1} (X^TX)^{-1} \\
+= &\sigma^2 (\lambda (X^TX)^{-1} + I)^{-1} (\lambda (X^TX)^{-1} + I)^{-1} (X^TX)^{-1} \\
+= &\sigma^2 (\lambda (X^TX)^{-1} + I)^{-1} ((\lambda (X^TX)^{-1} + I)^{-1} (X^TX)^{-1})^T \\
+= &\sigma^2 (I + \lambda(X^TX)^{-1})^{-1}  (X^TX)^{-1} ((I + \lambda(X^TX)^{-1})^{-1})^T \\
+= &\sigma^2 Z (X^TX)^{-1} Z^T \\
+\text{where } Z = &(I + \lambda (X^TX)^{-1})^{-1}
+\end{split} 
+\end{equation*}
 
 \end{document}
