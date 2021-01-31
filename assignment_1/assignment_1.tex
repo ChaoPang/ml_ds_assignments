@@ -51,7 +51,7 @@ Take the derivative w.r.t $\boldsymbol{\lambda}$, set the gradient to 0, then so
 \end{flushleft}
 
 \begin{equation*}
-\nabla_{\lambda_{ML}} = {\frac{\sum_{i=1}^N{x_i}}{\lambda}} - N = 0
+\nabla{L_{\lambda_{ML}}} = {\frac{\sum_{i=1}^N{x_i}}{\lambda}} - N = 0
 \end{equation*}
 
 \begin{equation*}
@@ -84,11 +84,53 @@ Next, take the derivative w.r.t $\boldsymbol{\lambda}$, set the gradient to 0, t
 \end{flushleft}
 
 \begin{equation*}
-\nabla_{\lambda_{MAP}} = {\frac{\sum_{i=1}^N{x_i}}{\lambda}} - N + \frac{a-1}{\lambda} - b = 0
+\nabla{L_{\lambda_{MAP}}} = {\frac{\sum_{i=1}^N{x_i}}{\lambda}} - N + \frac{a-1}{\lambda} - b = 0
 \end{equation*}
 
 \begin{equation*}
 \lambda_{MAP} = \frac{{\sum_{i=1}^N{x_i}} + a - 1}{N + b}
 \end{equation*}
+
+\begin{flushleft}
+
+(d) Solution: the prior gamma distribution is conjugate to the likelihood function, therefore the posterior is a gamma distribution as well. 
+\end{flushleft}
+\begin{equation*}
+\begin{split}
+p(\lambda|X) &\propto p(X|\lambda) p(\lambda|a,b) \\
+&\propto (\prod_{i=1}^N\frac{\lambda^{x_i}}{x_i!} e^{-\lambda} \frac{b^a\lambda^{a-1}e^{-b\lambda}}{\Gamma(a)}) \\
+&\propto [\lambda^{\sum_{i=1}^Nx_i} e^{-N\lambda}][\lambda^{a-1}e^{-b\lambda}] \\
+&\propto \lambda^{\sum_{i=1}^Nx_i + a - 1} e^{-\lambda(b + N)} \\
+&\propto \frac{b^{\sum_{i=1}^Nx_i + a}\lambda^{\sum_{i=1}^Nx_i + a - 1} e^{-\lambda(b + N)}}{\Gamma(\sum_{i=1}^Nx_i + a)} \\
+& = \textit{Gamma}(\sum_{i=1}^Nx_i + a, b + N)
+\end{split}
+\end{equation*}
+
+(e) Solution
+
+\begin{align*}
+&\textit{Let $p(\lambda|X) \sim Gamma(\hat{a}, \hat{b})$ \; for $\hat{a} = \sum_{i=1}^Nx_i + a$ , $\hat{b} = b+ N $} \\
+&\textit{We have $\sim Var[\lambda|X] = E[\lambda^2] - E[\lambda]^2$}
+\end{align*}
+
+\begin{equation*}
+\begin{split}
+E[\lambda|X] &= \int^{\infty}_0\frac{ \hat{b}^{\hat{a} } \lambda^{\hat{a} - 1} e^{-\lambda\hat{b}}}{\Gamma(\hat{a})} \lambda d\lambda \\
+&= \frac{\hat{a}}{\hat{b}} \int^{\infty}_0 \frac{\hat{b}^{\hat{a} + 1} \lambda^{\hat{a}} e^{-\lambda \hat{b}} }{\Gamma{(\hat{a} + 1)}} d\lambda \\
+&= \frac{\hat{a}}{\hat{b}} \int^{\infty}_0 Gamma(\lambda|\hat{a} + 1, \hat{b}) d\lambda \\
+&= \frac{\hat{a}}{\hat{b}} = \frac{{\sum_{i=1}^N{x_i}} + a}{N + b} \\
+E[\lambda^2|X] &= \int^{\infty}_0\frac{ \hat{b}^{\hat{a} } \lambda^{\hat{a} - 1} e^{-\lambda\hat{b}}}{\Gamma(\hat{a})} \lambda^2 d\lambda \\
+&= \frac{\hat{a} (\hat{a} + 1)}{\hat{b}^2} \int^{\infty}_0 \frac{\hat{b}^{\hat{a} + 2} \lambda^{\hat{a} + 1} e^{-\lambda \hat{b}} }{\Gamma{(\hat{a} + 2)}} d\lambda \\
+&= \frac{\hat{a} (\hat{a} + 1)}{\hat{b}^2} \int^{\infty}_0 Gamma(\lambda|\hat{a} + 2, \hat{b}) d\lambda \\
+&= \frac{\hat{a} (\hat{a} + 1)}{\hat{b}^2} \\
+Var[\lambda|X] &= \frac{\hat{a} (\hat{a} + 1)}{\hat{b}^2}  - (\frac{\hat{a}}{\hat{b}})^2 = \frac{\hat{a}}{\hat{b}^2}
+\end{split} 
+\end{equation*}
+\\
+The relations between $\lambda_{ML}$, $\lambda_{MAP}$, and $E[\lambda|X]$ is described below. 
+\begin{itemize}
+\item $\lambda_{MAP}$ and $E[\lambda|X]$ are almost identical to each other. $\lambda_{MAP}$ is $\frac{1}{N}$ smaller than $E[\lambda|X]$. As the number of observation N increases, $\lambda_{MAP}$ approaches $E[\lambda|X]$
+\item in the limit as $a \xrightarrow{} 0$ and $b \xrightarrow{} 0$, $E[\lambda|X]$ approaches $\lambda_{ML}$
+\end{itemize}
 
 \end{document}
