@@ -191,4 +191,30 @@ Var[w] = &(\lambda I + X^TX)^{-1}X^T (\sigma^2I + Xww^TX^T) X (\lambda I + X^TX)
 \end{split} 
 \end{equation*}
 
+\pagebreak
+
+(b) If $w_{RR}$ is the ridge regression solution and $w_{LS}$ is the least squares solution for the above problem,derive an equation for writing $w_{RR}$ as a function of $w_{LS}$ and the singular values and right singular vectorsof feature matrix X. Recall that the singular value decomposition of $X = USV^T$.
+\begin{flushleft}
+Solution: From the lecture, we have the following
+\end{flushleft}
+\begin{align*}
+&w_{LS} = (X^T X)^{-1} X^T y \\
+&w_{RR} = (I \lambda + X^T X)^{-1} X^T y \\
+&X = USV^T
+\end{align*}
+
+\begin{flushleft}
+Then we can derive
+\end{flushleft}
+\begin{equation*}
+\begin{split}
+w_{RR} &= ((X^TX) (\lambda (X^TX)^{-1} + I))^{-1} X^T y \\
+&= (I + \lambda (X^TX)^{-1})^{-1} (X^TX)^{-1} X^T y \\
+&= (I + \lambda (X^TX)^{-1})^{-1} w_{LS} \\
+&= (I + \lambda (V S^T U^T U S V^T)^{-1})^{-1} w_{LS} \\
+&= (I + \lambda V S^{-2} V^T)^{-1} w_{LS} \\
+\end{split} 
+\end{equation*}
+
+
 \end{document}
