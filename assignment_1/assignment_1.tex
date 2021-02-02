@@ -140,6 +140,7 @@ The relations between $\lambda_{ML}$, $\lambda_{MAP}$, and $E[\lambda|X]$ is des
 \end{itemize}
 
 \section{Problem 2}
+\subsection {}
 (a) You have data $(x_i; y_i)$ for i = 1,..., n, where x $\in  \mathbb{R}$ and y $\in \mathbb{R}$. You model this as $y_i \stackrel{iid}{\sim} N(x_i^Tw; \sigma^2)$. You use the data you have to approximate w with $w_{RR}= (\lambda I + X^TX)^{-1}X^T y$ , where X
 and y are defined as in the lectures. Derive the results for $\mathbb{E}[w_{RR}]$ and $\mathbb{V}[w_{RR}]$ given in the slides.
 
@@ -193,7 +194,9 @@ Var[w] = &(\lambda I + X^TX)^{-1}X^T (\sigma^2I + Xww^TX^T) X (\lambda I + X^TX)
 
 \pagebreak
 
+\subsection {}
 (b) If $w_{RR}$ is the ridge regression solution and $w_{LS}$ is the least squares solution for the above problem,derive an equation for writing $w_{RR}$ as a function of $w_{LS}$ and the singular values and right singular vectorsof feature matrix X. Recall that the singular value decomposition of $X = USV^T$.
+
 \begin{flushleft}
 Solution: From the lecture, we have the following
 \end{flushleft}
