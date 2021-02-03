@@ -1,7 +1,11 @@
 \documentclass[11pt]{report}
  
+\usepackage{ragged2e}
 \usepackage{amssymb}
 \usepackage{amsmath}
+\usepackage{graphicx}
+
+\graphicspath{ {hw1-data/} }
 
 \begin{document}
 
@@ -17,9 +21,8 @@ model this sequence as i.i.d. from a Poisson distribution with unknown parameter
 
 \[ p(X|\lambda) = \frac{ \lambda^X}{X!}e^-\lambda \]
 
-\begin{flushleft}
+\justify
 (a) Solution: 
-\end{flushleft}
 
 \begin{center}
 Let $L(\lambda; x_1, x_2 ..., x_i)  \sim$ joint likelihood
@@ -33,10 +36,9 @@ L(\lambda; x_1, x_2 ..., x_i)  & = \prod_{i=1}^N p(X=x_i| \lambda) \\
 \end{equation*}
 
 
-\begin{flushleft}
+\justify
 (b) Solution: 
 Use the logarithmic trick on the likelihood function
-\end{flushleft}
 
 \begin{equation*}
 \begin{split}
@@ -46,7 +48,7 @@ Use the logarithmic trick on the likelihood function
 \end{equation*}
 
 \begin{flushleft}
-Take the derivative w.r.t $\boldsymbol{\lambda}$, set the gradient to 0, then solve $\boldsymbol{\lambda}$. The solution is equal to the sample mean. 
+Take the derivative w.r.t $\boldsymbol{\lambda}$, set the gradient to 0, then solve for $\boldsymbol{\lambda}$. The solution is equal to the sample mean. 
 \end{flushleft}
 
 \begin{equation*}
@@ -57,9 +59,9 @@ Take the derivative w.r.t $\boldsymbol{\lambda}$, set the gradient to 0, then so
 \lambda_{ML} = {\frac{\sum_{i=1}^N{x_i}}{N}}
 \end{equation*}
 \\
-\begin{flushleft}
+
+\justify
 (c) Solution: 
-\end{flushleft}
 
 \begin{align*} 
 & \textit{Bayes Rule:} \;\;  p(\lambda|X) = \frac{p(X|\lambda) p(\lambda|a,b)}{\int_{0}^{\infty} p(X|\lambda) p(\lambda|a,b) d\lambda} = \frac{p(X|\lambda) p(\lambda|a,b)}{p(X)} \\
@@ -67,9 +69,8 @@ Take the derivative w.r.t $\boldsymbol{\lambda}$, set the gradient to 0, then so
 &\textit{Let} \;\; p(X|\lambda) = \prod_{i=1}^N\frac{\lambda^{x_i}}{x_i!} e^{-\lambda} \\
 \end{align*}
 
-\begin{flushleft}
+\justify
 Then we have the following, again using the logarithmic trick
-\end{flushleft}
 
 \begin{equation*}
 \begin{split}
@@ -78,9 +79,8 @@ Then we have the following, again using the logarithmic trick
 \end{split}
 \end{equation*}
 
-\begin{flushleft}
-Next, take the derivative w.r.t $\boldsymbol{\lambda}$, set the gradient to 0, then solve $\boldsymbol{\lambda}$.
-\end{flushleft}
+\justify
+Next, take the derivative w.r.t $\boldsymbol{\lambda}$, set the gradient to 0, then solve for $\boldsymbol{\lambda}$.
 
 \begin{equation*}
 \nabla{L_{\lambda_{MAP}}} = {\frac{\sum_{i=1}^N{x_i}}{\lambda}} - N + \frac{a-1}{\lambda} - b = 0
@@ -92,9 +92,9 @@ Next, take the derivative w.r.t $\boldsymbol{\lambda}$, set the gradient to 0, t
 
  \pagebreak
 
-\begin{flushleft}
+\justify
 (d) Solution: the prior gamma distribution is conjugate to the likelihood function, therefore the posterior is a gamma distribution as well. 
-\end{flushleft}
+
 \begin{equation*}
 \begin{split}
 p(\lambda|X) &\propto p(X|\lambda) p(\lambda|a,b) \\
@@ -106,9 +106,9 @@ p(\lambda|X) &\propto p(X|\lambda) p(\lambda|a,b) \\
 \end{split}
 \end{equation*}
 
-\begin{flushleft}
+\justify
 (e) Solution
-\end{flushleft}
+
 \begin{align*}
 &\textit{Let $p(\lambda|X) \sim Gamma(\hat{a}, \hat{b})$ \; for $\hat{a} = \sum_{i=1}^Nx_i + a$ , $\hat{b} = b+ N $} \\
 &\textit{We have $\sim Var[\lambda|X] = E[\lambda^2] - E[\lambda]^2$}
@@ -140,16 +140,16 @@ The relations between $\lambda_{ML}$, $\lambda_{MAP}$, and $E[\lambda|X]$ is des
 \end{itemize}
 
 \section{Problem 2}
-\subsection {}
+\justify
 (a) You have data $(x_i; y_i)$ for i = 1,..., n, where x $\in  \mathbb{R}$ and y $\in \mathbb{R}$. You model this as $y_i \stackrel{iid}{\sim} N(x_i^Tw; \sigma^2)$. You use the data you have to approximate w with $w_{RR}= (\lambda I + X^TX)^{-1}X^T y$ , where X
 and y are defined as in the lectures. Derive the results for $\mathbb{E}[w_{RR}]$ and $\mathbb{V}[w_{RR}]$ given in the slides.
 
-\begin{flushleft}
-Solution: the subscript RR is dropped from the parameter $w_{RR}$ to keep the notation uncluttered
-\end{flushleft}
+\justify
+\textbf{Solution:}
+
 \begin{equation*}
 \begin{split}
-E[w] &=  E[(\lambda I + X^TX)^{-1}X^T y] \\
+E[w_{RR}] &=  E[(\lambda I + X^TX)^{-1}X^T y] \\
 &= (\lambda I + X^TX)^{-1}X^T E[y] \\
 &= (\lambda I + X^TX)^{-1}X^TXw \\
 \\
@@ -158,26 +158,24 @@ Var[w] &=  E[(w - E[w])(w - E[w])^T] \\
 \end{split} 
 \end{equation*}
 
-\begin{flushleft}
+\justify
 Plug in $w_{RR}$ into $Var[w]$
-\end{flushleft}
 
 \begin{equation*}
 \begin{split}
-Var[w] =  &E[(\lambda I + X^TX)^{-1}X^Ty  y^T X (\lambda I + X^TX)^{-1}] \\
+Var[w_{RR}] =  & E[(\lambda I + X^TX)^{-1}X^Ty  y^T X (\lambda I + X^TX)^{-1}] \\
 & - (\lambda I + X^TX)^{-1}X^TXw w^T X^T X (\lambda I + X^TX)^{-1}\\
 = &(\lambda I + X^TX)^{-1}X^T E[y y^T] X (\lambda I + X^TX)^{-1}] \\
 & - (\lambda I + X^TX)^{-1}X^TXw w^T X^T X (\lambda I + X^TX)^{-1}\\
 \end{split} 
 \end{equation*}
 
-\begin{flushleft}
+\justify
 Plug in $E[yy^T] = \sigma^2I + Xww^TX^T$
-\end{flushleft}
 
 \begin{equation*}
 \begin{split}
-Var[w] = &(\lambda I + X^TX)^{-1}X^T (\sigma^2I + Xww^TX^T) X (\lambda I + X^TX)^{-1} \\
+Var[w_{RR}] = &(\lambda I + X^TX)^{-1}X^T (\sigma^2I + Xww^TX^T) X (\lambda I + X^TX)^{-1} \\
 & - (\lambda I + X^TX)^{-1}X^TXw w^T X^T X (\lambda I + X^TX)^{-1}\\
 = &(\lambda I + X^TX)^{-1}X^T \sigma^2I X (\lambda I + X^TX)^{-1}  \\
 = &\sigma^2 (\lambda I + X^TX)^{-1}X^T X (\lambda I + X^TX)^{-1}  \\
@@ -194,21 +192,21 @@ Var[w] = &(\lambda I + X^TX)^{-1}X^T (\sigma^2I + Xww^TX^T) X (\lambda I + X^TX)
 
 \pagebreak
 
-\subsection {}
+\justify
 (b) If $w_{RR}$ is the ridge regression solution and $w_{LS}$ is the least squares solution for the above problem,derive an equation for writing $w_{RR}$ as a function of $w_{LS}$ and the singular values and right singular vectorsof feature matrix X. Recall that the singular value decomposition of $X = USV^T$.
 
-\begin{flushleft}
-Solution: From the lecture, we have the following
-\end{flushleft}
+\justify
+\textbf{Solution:} From the lecture, we have the following
+
 \begin{align*}
 &w_{LS} = (X^T X)^{-1} X^T y \\
 &w_{RR} = (I \lambda + X^T X)^{-1} X^T y \\
 &X = USV^T
 \end{align*}
 
-\begin{flushleft}
+\justify
 Then we can derive
-\end{flushleft}
+
 \begin{equation*}
 \begin{split}
 w_{RR} &= ((X^TX) (\lambda (X^TX)^{-1} + I))^{-1} X^T y \\
@@ -216,8 +214,60 @@ w_{RR} &= ((X^TX) (\lambda (X^TX)^{-1} + I))^{-1} X^T y \\
 &= (I + \lambda (X^TX)^{-1})^{-1} w_{LS} \\
 &= (I + \lambda (V S^T U^T U S V^T)^{-1})^{-1} w_{LS} \\
 &= (I + \lambda V S^{-2} V^T)^{-1} w_{LS} \\
+&= (V I V^T + V \lambda S^{-2} V^T)^{-1} w_{LS} \\
+&= (V (I + \lambda S^{-2}) V^T )^{-1} w_{LS} \\
+&= (V^T)^{-1} (I + \lambda S^{-2})^{-1} V^{-1}  w_{LS} \\
+&= V (I + \lambda S^{-2})^{-1} V^T  w_{LS} \\
 \end{split} 
 \end{equation*}
 
+\pagebreak
+
+\section{Problem 3}
+(a) For $\lambda = 0, 1, 2 ,3, ..., 5000$, solve for $w_{RR}$. (Notice that when $\lambda = 0$, $w_{RR} = w_{LS}$). In one figure, plot the 7 values in $w_{RR}$ as a function of $df(\lambda)$. You will need to call a built in SVD function to do this as discussed in the slides. Be sure to label your 7 curves by their dimension in ${x^2}$.
+
+\justify
+\textbf{Answer:} \textbf{Figure~\ref{fig:df_lambda_weight}}  shows the plot of the ridge regression weight solution as a function of degree of freedom for lambda. The features are named based on their order in which they appear in the data set, and \emph{w7} is the weight associated with the bias term (where all the values are 1.0). 
+
+\begin{figure}[h]
+\includegraphics[scale=0.40]{df_lambda_weight.png}
+\centering
+\caption{Plot weight parameters against the corresponding degree of freedom for lambda}
+\label{fig:df_lambda_weight}
+\end{figure}
+
+\justify
+(b) Two dimensions clearly stand out over the others. Which ones are they and what information canwe get from this?
+
+\justify
+\textbf{Answer:} as \textbf{Figure~\ref{fig:df_lambda_weight}} shows that \emph{w4} (corresponding to the bottom line) and \emph{w6} (corresponding to the top line) are the parameter weights that stand out over the others. The weight \emph{w4} is negatively correlated with the response (miles per gallon) meaning the increase in corresponding feature will decrease the value of the response. On the other hand, the weight \emph{w6} is positively correlated with the response meaning the increase in corresponding feature will increase the value of the response. In case of the least squares solution, where $\lambda=0$ or $df(\lambda) = 7$,  the negative impact of \emph{w4}  on the response outweighs the positive impact of \emph{w6} because the absolute value of \emph{w4} is far greater. However, as $df(\lambda)$ decreases, especially when $df(\lambda) <= 4$,  \emph{w4} and \emph{w6} seem to cancel each other out and decrease at a similar rate.
+
+\justify
+(c) For $\lambda = 1, ..., 50$, predict all 42 test cases. Plot the root mean squared error (RMSE) on the test set as a function of $\lambda$. What does this figure tell you when choosing for this problem (and when choosing between ridge regression and least squares)?
+
+\justify
+\textbf{Answer:} as \textbf{Figure~\ref{fig:ambda_rmse}} shows that RMSE keeps increasing as $\lambda$ increases. The best solution based on the cross validation in the test set would be the least squares solution where $\lambda = 0$. This may suggest a high bias (underfitting) in the model using the default features. 
+
+
+\begin{figure}[h]
+\includegraphics[scale=0.35]{lambda_rmse.png}
+\centering
+\caption{Plot root mean squared error against the lambda}
+\label{fig:ambda_rmse}
+\end{figure}
+
+
+\justify
+(d) In one figure, plot the test RMSE as a function of $\lambda = 0, . . . , 100$ for $ p = 1,  2, 3$. Based on this plot, which value of p should you choose and why? How does your assessment of the ideal value of $\lambda$ change for this problem?
+
+\justify
+\textbf{Answer:}  \textbf{Figure~\ref{fig:polynomial_lambda_rmse}} shows that the \textbf{2nd-order} polynomial regression model has the lowest RMSE values consistently for different $\lambda$ values using the test set, therefore we should choose $p=2$.  
+
+\begin{figure}[h]
+\includegraphics[scale=0.4]{polynomial_lambda_rmse.png}
+\centering
+\caption{Plot root mean squared error against the lambda for pth-order polynomial regressions}
+\label{fig:polynomial_lambda_rmse}
+\end{figure}
 
 \end{document}

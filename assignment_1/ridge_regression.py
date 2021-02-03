@@ -83,7 +83,7 @@ def plot_df_lambda_w_rr(x, y, lambdas):
 
     # Get the number of features for creating labels
     _, num_features = np.shape(x)
-    w_rr_df_lambda_labels = [f'f{str(i)}' for i in range(1, num_features + 1)] + ['df']
+    w_rr_df_lambda_labels = [f'w{str(i)}' for i in range(1, num_features + 1)] + ['df']
 
     # compute the degree of freedom for lambda and the corresponding ridge regression solution
     w_rr_df_lambda_list = []
@@ -111,7 +111,7 @@ def plot_df_lambda_w_rr(x, y, lambdas):
     for feature_name in w_rr_df_lambda_pd_unpivoted.variable.unique().tolist():
         sub = w_rr_df_lambda_pd_unpivoted[w_rr_df_lambda_pd_unpivoted['variable'] == feature_name]
         df, label, weight_value = sub[sub.df == sub.df.max()].iloc[0].tolist()
-        plt.text(df + 0.1, weight_value - 0.1, label, horizontalalignment='left', size=10)
+        plt.text(df + 0.1, weight_value - 0.1, label, horizontalalignment='left', size=12)
 
     # Save the plot
     plt.savefig(path.join(INPUT_FOLDER, 'df_lambda_weight.png'))
