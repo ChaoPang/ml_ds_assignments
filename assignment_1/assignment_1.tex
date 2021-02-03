@@ -47,9 +47,8 @@ Use the logarithmic trick on the likelihood function
 \end{split}
 \end{equation*}
 
-\begin{flushleft}
+\justify
 Take the derivative w.r.t $\boldsymbol{\lambda}$, set the gradient to 0, then solve for $\boldsymbol{\lambda}$. The solution is equal to the sample mean. 
-\end{flushleft}
 
 \begin{equation*}
 \nabla{L_{\lambda_{ML}}} = {\frac{\sum_{i=1}^N{x_i}}{\lambda}} - N = 0
@@ -171,7 +170,16 @@ Var[w_{RR}] =  & E[(\lambda I + X^TX)^{-1}X^Ty  y^T X (\lambda I + X^TX)^{-1}] \
 \end{equation*}
 
 \justify
-Plug in $E[yy^T] = \sigma^2I + Xww^TX^T$
+$E[yy^T]$ can be derived as the following, where $y \sim N(\mu, \sum)$ for $\mu = Xw$
+
+\begin{equation*}
+\begin{split}
+Var[y] =&  E(y - E[y]) E(y - E[y])^T \\
+=& E[y y^T] - E[\mu \mu^T] = \sum \\
+E[yy^T] =& \sigma^2I + Xww^TX^T\\
+\end{split} 
+\end{equation*}
+
 
 \begin{equation*}
 \begin{split}
@@ -183,9 +191,19 @@ Var[w_{RR}] = &(\lambda I + X^TX)^{-1}X^T (\sigma^2I + Xww^TX^T) X (\lambda I + 
 = &\sigma^2 (X^TX(\lambda (X^TX)^{-1} + I))^{-1}X^T X (X^TX(\lambda (X^TX)^{-1} + I))^{-1}  \\
 = &\sigma^2 (\lambda (X^TX)^{-1} + I)^{-1} (X^TX)^{-1} X^T X (\lambda (X^TX)^{-1} + I)^{-1} (X^TX)^{-1} \\
 = &\sigma^2 (\lambda (X^TX)^{-1} + I)^{-1} (\lambda (X^TX)^{-1} + I)^{-1} (X^TX)^{-1} \\
-= &\sigma^2 (\lambda (X^TX)^{-1} + I)^{-1} ((\lambda (X^TX)^{-1} + I)^{-1} (X^TX)^{-1})^T \\
+\\
+\end{split} 
+\end{equation*}
+
+\justify
+Given that  $(X^TX)^{-1}$ and $\lambda (X^TX)^{-1} + I)^{-1} (X^TX)^{-1}$ are symmetric matrices so we can replace them with their corresponding transpose. 
+
+\begin{equation*}
+\begin{split}
+Var[w_{RR}] = &\sigma^2 (\lambda (X^TX)^{-1} + I)^{-1} ((\lambda (X^TX)^{-1} + I)^{-1} (X^TX)^{-1})^T \\
 = &\sigma^2 (I + \lambda(X^TX)^{-1})^{-1}  (X^TX)^{-1} ((I + \lambda(X^TX)^{-1})^{-1})^T \\
 = &\sigma^2 Z (X^TX)^{-1} Z^T \\
+\\
 \text{where } Z = &(I + \lambda (X^TX)^{-1})^{-1}
 \end{split} 
 \end{equation*}
@@ -193,7 +211,9 @@ Var[w_{RR}] = &(\lambda I + X^TX)^{-1}X^T (\sigma^2I + Xww^TX^T) X (\lambda I + 
 \pagebreak
 
 \justify
-(b) If $w_{RR}$ is the ridge regression solution and $w_{LS}$ is the least squares solution for the above problem,derive an equation for writing $w_{RR}$ as a function of $w_{LS}$ and the singular values and right singular vectorsof feature matrix X. Recall that the singular value decomposition of $X = USV^T$.
+(b) If $w_{RR}$ is the ridge regression solution and $w_{LS}$ is the least squares solution for the above problem,
+derive an equation for writing $w_{RR}$ as a function of $w_{LS}$ and the singular values and right singular vectors
+of feature matrix X. Recall that the singular value decomposition of $X = USV^T$.
 
 \justify
 \textbf{Solution:} From the lecture, we have the following
@@ -227,7 +247,7 @@ w_{RR} &= ((X^TX) (\lambda (X^TX)^{-1} + I))^{-1} X^T y \\
 (a) For $\lambda = 0, 1, 2 ,3, ..., 5000$, solve for $w_{RR}$. (Notice that when $\lambda = 0$, $w_{RR} = w_{LS}$). In one figure, plot the 7 values in $w_{RR}$ as a function of $df(\lambda)$. You will need to call a built in SVD function to do this as discussed in the slides. Be sure to label your 7 curves by their dimension in ${x^2}$.
 
 \justify
-\textbf{Answer:} \textbf{Figure~\ref{fig:df_lambda_weight}}  shows the plot of the ridge regression weight solution as a function of degree of freedom for lambda. The features are named based on their order in which they appear in the data set, and \emph{w7} is the weight associated with the bias term (where all the values are 1.0). 
+\textbf{Answer:} \textbf{Figure~\ref{fig:df_lambda_weight}}  shows the plot of the ridge regression weight solution as a function of degree of freedom for lambda. The weights are named based on the order of their corresponding features in which they appear in the data set, and \emph{w7} is the weight associated with the bias term (where all the values are 1.0). 
 
 \begin{figure}[h]
 \includegraphics[scale=0.40]{df_lambda_weight.png}
@@ -237,7 +257,8 @@ w_{RR} &= ((X^TX) (\lambda (X^TX)^{-1} + I))^{-1} X^T y \\
 \end{figure}
 
 \justify
-(b) Two dimensions clearly stand out over the others. Which ones are they and what information canwe get from this?
+(b) Two dimensions clearly stand out over the others. Which ones are they and what information can
+we get from this?
 
 \justify
 \textbf{Answer:} as \textbf{Figure~\ref{fig:df_lambda_weight}} shows that \emph{w4} (corresponding to the bottom line) and \emph{w6} (corresponding to the top line) are the parameter weights that stand out over the others. The weight \emph{w4} is negatively correlated with the response (miles per gallon) meaning the increase in corresponding feature will decrease the value of the response. On the other hand, the weight \emph{w6} is positively correlated with the response meaning the increase in corresponding feature will increase the value of the response. In case of the least squares solution, where $\lambda=0$ or $df(\lambda) = 7$,  the negative impact of \emph{w4}  on the response outweighs the positive impact of \emph{w6} because the absolute value of \emph{w4} is far greater. However, as $df(\lambda)$ decreases, especially when $df(\lambda) <= 4$,  \emph{w4} and \emph{w6} seem to cancel each other out and decrease at a similar rate.
