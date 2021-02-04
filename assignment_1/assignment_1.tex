@@ -247,7 +247,7 @@ w_{RR} &= ((X^TX) (\lambda (X^TX)^{-1} + I))^{-1} X^T y \\
 (a) For $\lambda = 0, 1, 2 ,3, ..., 5000$, solve for $w_{RR}$. (Notice that when $\lambda = 0$, $w_{RR} = w_{LS}$). In one figure, plot the 7 values in $w_{RR}$ as a function of $df(\lambda)$. You will need to call a built in SVD function to do this as discussed in the slides. Be sure to label your 7 curves by their dimension in ${x^2}$.
 
 \justify
-\textbf{Answer:} \textbf{Figure~\ref{fig:df_lambda_weight}}  shows the plot of the ridge regression weight solution as a function of degree of freedom for lambda. The weights are named based on the order of their corresponding features in which they appear in the data set, and \emph{w7} is the weight associated with the bias term (where all the values are 1.0). 
+\textbf{Answer:} \textbf{Figure~\ref{fig:df_lambda_weight}}  shows the plot of the ridge regression $w_{RR}$ solution as a function of degree of freedom for lambda. The weights are named based on labels provided in the footnoot of the homework, \emph{\textbf{bias term}} corresponds to the column, where all the values are 1.0. 
 
 \begin{figure}[h]
 \includegraphics[scale=0.40]{df_lambda_weight.png}
@@ -257,11 +257,10 @@ w_{RR} &= ((X^TX) (\lambda (X^TX)^{-1} + I))^{-1} X^T y \\
 \end{figure}
 
 \justify
-(b) Two dimensions clearly stand out over the others. Which ones are they and what information can
-we get from this?
+(b) Two dimensions clearly stand out over the others. Which ones are they and what information can we get from this?
 
 \justify
-\textbf{Answer:} as \textbf{Figure~\ref{fig:df_lambda_weight}} shows that \emph{w4} (corresponding to the bottom line) and \emph{w6} (corresponding to the top line) are the parameter weights that stand out over the others. The weight \emph{w4} is negatively correlated with the response (miles per gallon) meaning the increase in corresponding feature will decrease the value of the response. On the other hand, the weight \emph{w6} is positively correlated with the response meaning the increase in corresponding feature will increase the value of the response. In case of the least squares solution, where $\lambda=0$ or $df(\lambda) = 7$,  the negative impact of \emph{w4}  on the response outweighs the positive impact of \emph{w6} because the absolute value of \emph{w4} is far greater. However, as $df(\lambda)$ decreases, especially when $df(\lambda) <= 4$,  \emph{w4} and \emph{w6} seem to cancel each other out and decrease at a similar rate.
+\textbf{Answer:} as \textbf{Figure~\ref{fig:df_lambda_weight}} shows that \emph{\textbf{weight}} (corresponding to the bottom line) and \emph{\textbf{year made}} (corresponding to the top line) are the dimensions that stand out over the others. \emph{\textbf{weight}} is negatively correlated with the response (miles per gallon) meaning the increase in corresponding feature will decrease the value of the response. On the other hand, \emph{\textbf{year made}} is positively correlated with the response meaning the increase in corresponding feature will increase the value of the response. Regardless of the choice of $\lambda$,  \emph{\textbf{year made}} always has a positive relationship with the output and \emph{\textbf{weight}} always has a negative relationship with the output. In addition, \emph{\textbf{year made}} and \emph{\textbf{weight}} always have the largest values among all the other dimensions, therefore we can be confident that the features corresponding to \emph{\textbf{year made}} and \emph{\textbf{weight}} are most significant. 
 
 \justify
 (c) For $\lambda = 1, ..., 50$, predict all 42 test cases. Plot the root mean squared error (RMSE) on the test set as a function of $\lambda$. What does this figure tell you when choosing for this problem (and when choosing between ridge regression and least squares)?
@@ -282,7 +281,7 @@ we get from this?
 (d) In one figure, plot the test RMSE as a function of $\lambda = 0, . . . , 100$ for $ p = 1,  2, 3$. Based on this plot, which value of p should you choose and why? How does your assessment of the ideal value of $\lambda$ change for this problem?
 
 \justify
-\textbf{Answer:}  \textbf{Figure~\ref{fig:polynomial_lambda_rmse}} shows that the \textbf{2nd-order} polynomial regression model has the lowest RMSE values consistently for different $\lambda$ values using the test set, therefore we should choose $p=2$.  
+\textbf{Answer:} All features except for the bias term were standardized using the training data's mean and standard deviation for both training and test sets. \textbf{Figure~\ref{fig:polynomial_lambda_rmse}} shows that the \textbf{3rd-order} polynomial regression model performs better consistently than the other two models and it has the lowest RMSE value using the test set for $\lambda = 52$, therefore we should choose $p=3$.  
 
 \begin{figure}[h]
 \includegraphics[scale=0.4]{polynomial_lambda_rmse.png}
@@ -290,5 +289,13 @@ we get from this?
 \caption{Plot root mean squared error against the lambda for pth-order polynomial regressions}
 \label{fig:polynomial_lambda_rmse}
 \end{figure}
+
+\justify
+The best performing $\lambda$ values that minimize RMSE for different models can be shown below:
+\begin{itemize}
+	\item 1st order polynomial regression: $\lambda = 0, RMSE_{min} \approx 2.634$
+	\item 2nd order polynomial regression: $\lambda = 51, RMSE_{min} \approx 2.13$
+	\item 3rd order polynomial regression: $\lambda = 52, RMSE_{min} \approx 2.10$
+\end{itemize} 
 
 \end{document}
