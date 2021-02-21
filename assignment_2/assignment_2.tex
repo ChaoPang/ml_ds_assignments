@@ -1,0 +1,87 @@
+\documentclass[11pt]{report}
+ 
+\usepackage{ragged2e}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{bbm}
+
+\graphicspath{ {hw1-data/} }
+
+\begin{document}
+
+\title{COMS 4721: Machine Learning for Data Science 
+Home work 2}
+\author{Chao Pang}
+ 
+\maketitle
+
+\section* {Problem 1}
+Derive the solution for $\pi$ and each $\lambda_{y,d}$ by maximizing 
+
+\[ \hat{\pi}, \hat{\lambda}_{0, 1:D}, \hat{\lambda}_{1, 1:D}  =  arg \underset{\hat{\pi}, \hat{\lambda}_{0, 1:D}, \hat{\lambda}_{1, 1:D} }{max} \sum_{i=1}^{n} \ln {p(y_{i}|\pi)} +  \sum_{d=1}^{D} \Biggl( \ln{p(\lambda_{0,d})} + \ln{p(\lambda_{1,d})}  + \sum_{i=1}^{n} \ln{p(x_{i,d} | \lambda_{y_{i},d}) \Biggr)} \]
+
+
+\begin{align*} 
+& \textit{Let} \;\; p(y | \pi)  = \pi^{y} (1 - \pi)^{1 - y}   \;\; \textit{where y $\in \{0, 1\}$}\\
+& \textit{Let} \;\; p(\lambda | y)  = Gamma(2, 1) = \frac{ \lambda e^{-\lambda} } {\Gamma(2)}  \\
+& \textit{Let} \;\; p(x | \lambda) = \frac{ \lambda^x} {x!}e^{-\lambda} \\
+\end{align*}
+
+\justify (a) Derive $\hat{\pi}$ using the objective above
+\justify Solution: first plug in $p(y | \pi) $ and then take the derivative w.r.t \textbf{w}. 
+
+\begin{align*} 
+L &= \sum_{i=1}^{n} \Biggl( \ln{\pi^{ \mathbbm{1}\{ y_{i} = y \}  } (1 - \pi)^{ 1 - \mathbbm{1}\{ y_{i} = y \}  } } \Biggr) + \sum_{d=1}^{D} \Biggl( \ln{p(\lambda_{0,d})} + \ln{p(\lambda_{1,d})}  + \sum_{i=1}^{n} \ln{p(x_{i,d} | \lambda_{y_{i},d})} \Biggr) \\
+L &= \sum_{i=1}^{n} \Biggl( \mathbbm{1}\{ y_{i} = y \}  \ln{\pi} + ({ 1 - \mathbbm{1}\{ y_{i} = y \}  }) \ln{(1 - \pi)}  \Biggr) \\
+& + \sum_{d=1}^{D} \Biggl( \ln{p(\lambda_{0,d})} + \ln{p(\lambda_{1,d})}  + \sum_{i=1}^{n} \ln{p(x_{i,d} | \lambda_{y_{i},d})} \Biggr) \\
+\\
+\nabla{L_{\pi}} &= \sum_{i=1}^{n} \Biggl( \frac{ \mathbbm{1}\{ y_{i} = y \}  }{\pi} - \frac{ 1 - \mathbbm{1}\{ y_{i} = y \}  } { 1 - \pi}  \Biggr)  = 0 \\
+\\
+\pi &= \frac { \sum_{i=1}^{n} \mathbbm{1}\{ y_{i} = y \} } {n} \\ 
+\end{align*}
+
+\pagebreak
+
+\justify (b) Derive $\hat{\lambda}_{y, d}$ using the objective above, leaving $y$ and $d$ arbitrary in your notation
+\justify Solution: first plug in $p(\lambda | y)$ and $p(x | \lambda)$, then take the derivative w.r.t $\lambda_{y,d}$. 
+
+\[
+L= \sum_{i=1}^{n} \ln {p(y_{i}|\pi)} +  \sum_{d=1}^{D} \Biggl( \ln{ \frac{ \lambda_{0,d} \; e^{-\lambda_{0,d}} } {\Gamma(2)} } + \ln{ \frac{ \lambda_{1,d} \; e^{-\lambda_{1,d}} } {\Gamma(2)} }  + \sum_{i=1}^{n} \ln{\frac{ \lambda_{y_{i}, d}^{x_{i,d}}} {x_{i,d}!}e^ {-\lambda_{y_{i},d}} \Biggr)}
+\]
+
+\-
+\justify Ignore the first term because $\sum_{i=1}^{n} \ln {p(y_{i}|\pi)}$ is not related $\lambda$. We can ignore the sum over the dimension $d$ and remove $d$ notation temporarily since all dimensions can be treated the same way, simplify and rewrite the equation as the following, 
+
+\begin{small}
+\[
+\nabla{
+\Biggl(
+\ln{ \frac{ \lambda_{0} \; e^{-\lambda_{0}} } {\Gamma(2)} } + \ln{ \frac{ \lambda_{1} \; e^{-\lambda_{1}} } {\Gamma(2)} }  
++ \sum_{i=1}^{n} \ln{\frac{ \lambda_{0}^{x_{i}}} {x_{i}!}e^ {-\lambda_{0}}  \mathbbm{1}\{ y_{i} = 0 \} } 
++ \sum_{i=1}^{n} \ln{\frac{ \lambda_{1}^{x_{i}}} {x_{i}!}e^ {-\lambda_{1}}  \mathbbm{1}\{ y_{i} = 1} \}
+\Biggr)
+}
+\]
+\end{small}
+
+\-
+\justify Solving for $\lambda_{0, d}$
+\[
+\sum_{i=1}^{n} \frac{ x_{i} } {\lambda_{0}} \mathbbm{1}\{ y_{i} = 0 \}   -  \sum_{i=1}^{n} \mathbbm{1}\{ y_{i} = 0 \}  + \frac {1} {\lambda_{0}} - 1 = 0 
+\]
+
+\[
+\lambda_{0} = \frac {\sum_{i=1}^{n} x_{i} \mathbbm{1}\{ y_{i} = 0 \} + 1} {\sum_{i=1}^{n} \mathbbm{1}\{ y_{i} = 0 \} + 1} 
+\]
+
+\- 
+\justify $\lambda_{1,d}$ can be derived in the same way, so the the equation could be generalized using $y$. In addition, we put the dimension $d$ back to the equation, therefore we have the following,
+
+\[
+\lambda_{y, d} = \frac {\sum_{i=1}^{n} x_{i, d} \; \mathbbm{1}\{ y_{i} = y \} + 1} {\sum_{i=1}^{n} \mathbbm{1}\{ y_{i} = y \} + 1}  
+\]
+where $y \in \{0, 1\}$
+
+
+\end{document}

@@ -247,8 +247,6 @@ def main():
     x_train = x_train_pd.to_numpy()
     y_train = y_train_pd.to_numpy()
 
-    scaled_x_train = scale_with_training_set(x_train, x_train)
-
     # Loading the test data
     x_test_pd = pd.read_csv(path.join(INPUT_FOLDER, X_TEST), sep=',', header=None)
     y_test_pd = pd.read_csv(path.join(INPUT_FOLDER, Y_TEST), sep=',', header=None)
@@ -256,17 +254,15 @@ def main():
     x_test = x_test_pd.to_numpy()
     y_test = y_test_pd.to_numpy()
 
-    scaled_x_test = scale_with_training_set(x_train, x_test)
-
     # Problem 3 Task (a) for plotting the w_rr as a function of df(lambda)
-    plot_df_lambda_w_rr(x=scaled_x_train,
+    plot_df_lambda_w_rr(x=x_train,
                         y=y_train,
                         lambdas=range(0, 5001))
 
     # Problem 3 Task (c) for plotting the rmse as a function of lambda
-    plot_lambda_rmse(x_train=scaled_x_train,
+    plot_lambda_rmse(x_train=x_train,
                      y_train=y_train,
-                     x_test=scaled_x_test,
+                     x_test=x_test,
                      y_test=y_test,
                      lambdas=range(0, 51))
 
@@ -281,4 +277,7 @@ def main():
 
 
 if __name__ == '__main__':
+    """
+    Author: Chao Pang 
+    """
     main()

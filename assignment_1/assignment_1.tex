@@ -25,12 +25,12 @@ model this sequence as i.i.d. from a Poisson distribution with unknown parameter
 (a) Solution: 
 
 \begin{center}
-Let $L(\lambda; x_1, x_2 ..., x_i)  \sim$ joint likelihood
+Let $L(\lambda; x_1, x_2 , ..., x_N)  \sim$ joint likelihood
 \end{center}
 
 \begin{equation*}
 \begin{split}
-L(\lambda; x_1, x_2 ..., x_i)  & = \prod_{i=1}^N p(X=x_i| \lambda) \\
+L(\lambda; x_1, x_2 , ..., x_N)  & = \prod_{i=1}^N p(X=x_i| \lambda) \\
 &  = \prod_{i=1}^N\frac{\lambda^{x_i}}{x_i!} e^{-\lambda} \\
 \end{split}
 \end{equation*}
@@ -128,13 +128,13 @@ E[\lambda^2|X] &= \int^{\infty}_0\frac{ \hat{b}^{\hat{a} } \lambda^{\hat{a} - 1}
 &= \frac{\hat{a} (\hat{a} + 1)}{\hat{b}^2} \int^{\infty}_0 \frac{\hat{b}^{\hat{a} + 2} \lambda^{\hat{a} + 1} e^{-\lambda \hat{b}} }{\Gamma{(\hat{a} + 2)}} d\lambda \\
 &= \frac{\hat{a} (\hat{a} + 1)}{\hat{b}^2} \int^{\infty}_0 Gamma(\lambda|\hat{a} + 2, \hat{b}) d\lambda \\
 &= \frac{\hat{a} (\hat{a} + 1)}{\hat{b}^2} \\
-Var[\lambda|X] &= \frac{\hat{a} (\hat{a} + 1)}{\hat{b}^2}  - (\frac{\hat{a}}{\hat{b}})^2 = \frac{\hat{a}}{\hat{b}^2}
+Var[\lambda|X] &= \frac{\hat{a} (\hat{a} + 1)}{\hat{b}^2}  - (\frac{\hat{a}}{\hat{b}})^2 = \frac{\hat{a}}{\hat{b}^2} = \frac{\sum_{i=1}^Nx_i + a}{(b+ N)^2} \\
 \end{split} 
 \end{equation*}
 \\
 The relations between $\lambda_{ML}$, $\lambda_{MAP}$, and $E[\lambda|X]$ is described below. 
 \begin{itemize}
-\item $\lambda_{MAP}$ and $E[\lambda|X]$ are almost identical to each other. $\lambda_{MAP}$ is $\frac{1}{N}$ smaller than $E[\lambda|X]$. As the number of observation N increases, $\lambda_{MAP}$ approaches $E[\lambda|X]$
+\item $\lambda_{MAP}$ and $E[\lambda|X]$ are almost identical to each other. $\lambda_{MAP}$ is $\frac{1}{N + b}$ smaller than $E[\lambda|X]$. As the number of observation N increases, $\lambda_{MAP}$ approaches $E[\lambda|X]$
 \item in the limit as $a \xrightarrow{} 0$ and $b \xrightarrow{} 0$, $E[\lambda|X]$ approaches $\lambda_{ML}$
 \end{itemize}
 
@@ -196,7 +196,7 @@ Var[w_{RR}] = &(\lambda I + X^TX)^{-1}X^T (\sigma^2I + Xww^TX^T) X (\lambda I + 
 \end{equation*}
 
 \justify
-Given that  $(X^TX)^{-1}$ and $\lambda (X^TX)^{-1} + I)^{-1} (X^TX)^{-1}$ are symmetric matrices so we can replace them with their corresponding transpose. 
+Given that $\lambda (X^TX)^{-1} + I)^{-1} (X^TX)^{-1}$ is a symmetric matrix so we can replace it with its corresponding transpose. 
 
 \begin{equation*}
 \begin{split}
@@ -238,6 +238,12 @@ w_{RR} &= ((X^TX) (\lambda (X^TX)^{-1} + I))^{-1} X^T y \\
 &= (V (I + \lambda S^{-2}) V^T )^{-1} w_{LS} \\
 &= (V^T)^{-1} (I + \lambda S^{-2})^{-1} V^{-1}  w_{LS} \\
 &= V (I + \lambda S^{-2})^{-1} V^T  w_{LS} \\
+&= V (I S^{2} S^{-2} + \lambda S^{-2})^{-1} V^T  w_{LS} \\
+&= V ((I S^{2} + \lambda) S^{-2})^{-1} V^T  w_{LS} \\
+&= V S^{2} (I S^{2} + \lambda)^{-1} V^T  w_{LS} \\
+&= V M V^T  w_{LS} \\
+\\
+\text{where } M& =  S^{2} (I S^{2} + \lambda)^{-1} \text{; M is a diagonal matrix such that } M_{ii} = \frac{S_{ii}^2}{\lambda + S_{ii} ^ 2}
 \end{split} 
 \end{equation*}
 
@@ -260,13 +266,13 @@ w_{RR} &= ((X^TX) (\lambda (X^TX)^{-1} + I))^{-1} X^T y \\
 (b) Two dimensions clearly stand out over the others. Which ones are they and what information can we get from this?
 
 \justify
-\textbf{Answer:} as \textbf{Figure~\ref{fig:df_lambda_weight}} shows that \emph{\textbf{weight}} (corresponding to the bottom line) and \emph{\textbf{year made}} (corresponding to the top line) are the dimensions that stand out over the others. \emph{\textbf{weight}} is negatively correlated with the response (miles per gallon) meaning the increase in corresponding feature will decrease the value of the response. On the other hand, \emph{\textbf{year made}} is positively correlated with the response meaning the increase in corresponding feature will increase the value of the response. Regardless of the choice of $\lambda$,  \emph{\textbf{year made}} always has a positive relationship with the output and \emph{\textbf{weight}} always has a negative relationship with the output. In addition, \emph{\textbf{year made}} and \emph{\textbf{weight}} always have the largest values among all the other dimensions, therefore we can be confident that the features corresponding to \emph{\textbf{year made}} and \emph{\textbf{weight}} are most significant. 
+\textbf{Answer:} \textbf{Figure~\ref{fig:df_lambda_weight}} shows that \emph{\textbf{weight}} (corresponding to the bottom line) and \emph{\textbf{year made}} (corresponding to the top line) are the dimensions that stand out over the others. \emph{\textbf{weight}} is negatively correlated with the response (miles per gallon) meaning the increase in corresponding feature will decrease the value of the response. On the other hand, \emph{\textbf{year made}} is positively correlated with the response meaning the increase in corresponding feature will increase the value of the response. Regardless of the choice of $\lambda$,  \emph{\textbf{year made}} always has a positive relationship with the output and \emph{\textbf{weight}} always has a negative relationship with the output. In addition, \emph{\textbf{year made}} and \emph{\textbf{weight}} always have the largest values among all the other dimensions, therefore we can be confident that the features corresponding to \emph{\textbf{year made}} and \emph{\textbf{weight}} are most significant. 
 
 \justify
 (c) For $\lambda = 1, ..., 50$, predict all 42 test cases. Plot the root mean squared error (RMSE) on the test set as a function of $\lambda$. What does this figure tell you when choosing for this problem (and when choosing between ridge regression and least squares)?
 
 \justify
-\textbf{Answer:} as \textbf{Figure~\ref{fig:ambda_rmse}} shows that RMSE keeps increasing as $\lambda$ increases. The best solution based on the cross validation in the test set would be the least squares solution where $\lambda = 0$. This may suggest a high bias (underfitting) in the model using the default features. 
+\textbf{Answer:} \textbf{Figure~\ref{fig:ambda_rmse}} shows that RMSE keeps increasing as $\lambda$ increases. The best solution based on the cross validation using the test set would be the least squares solution where $\lambda = 0$. 
 
 
 \begin{figure}[h]
@@ -281,7 +287,7 @@ w_{RR} &= ((X^TX) (\lambda (X^TX)^{-1} + I))^{-1} X^T y \\
 (d) In one figure, plot the test RMSE as a function of $\lambda = 0, . . . , 100$ for $ p = 1,  2, 3$. Based on this plot, which value of p should you choose and why? How does your assessment of the ideal value of $\lambda$ change for this problem?
 
 \justify
-\textbf{Answer:} All features except for the bias term were standardized using the training data's mean and standard deviation for both training and test sets. \textbf{Figure~\ref{fig:polynomial_lambda_rmse}} shows that the \textbf{3rd-order} polynomial regression model performs better consistently than the other two models and it has the lowest RMSE value using the test set for $\lambda = 52$, therefore we should choose $p=3$.  
+\textbf{Answer:} All features except for the bias term were standardized using the training data's mean and standard deviation for both training and test sets. \textbf{Figure~\ref{fig:polynomial_lambda_rmse}} shows that the \textbf{3rd-order} polynomial regression model performed better consistently than the other two models and it had the lowest RMSE value using the test set for $\lambda = 52$, therefore we should choose $p=3$.  
 
 \begin{figure}[h]
 \includegraphics[scale=0.4]{polynomial_lambda_rmse.png}
@@ -291,11 +297,19 @@ w_{RR} &= ((X^TX) (\lambda (X^TX)^{-1} + I))^{-1} X^T y \\
 \end{figure}
 
 \justify
-The best performing $\lambda$ values that minimize RMSE for different models can be shown below:
+$\lambda$ is a hyperparameter that determines the amount of "shrinkage" applied to the weights, and the ideal value of $\lambda$ should be determined by the cross validation using a test set, where we choose the $\lambda$ value that minimizes RMSE. In this example, the ideal values of $\lambda$ for the three models are different as shown below,
 \begin{itemize}
 	\item 1st order polynomial regression: $\lambda = 0, RMSE_{min} \approx 2.634$
 	\item 2nd order polynomial regression: $\lambda = 51, RMSE_{min} \approx 2.13$
 	\item 3rd order polynomial regression: $\lambda = 52, RMSE_{min} \approx 2.10$
 \end{itemize} 
+
+\justify
+The 1st order model seemed to be underfitting the training data because the higher order models without any regularization (where $\lambda = 0$) had lower RMSEs compared to the 1st order model in cross validation. In addition, regularization didn't help much but worsened the performances of the 1st-order model as $\lambda$ increased, so using the default features only may cause a high bias problem and the least squares solution (where $\lambda = 0$) was the best solution for the 1st order. 
+
+\justify
+On the other hand, regularization helped greatly with the higher order models, that's because we incorporated additional polynomial features, as a result, the models had more degree of freedom and could fit the training data better. However, adding polynomial features could cause a high variance in the meantime as we can see in Figure~\ref{fig:polynomial_lambda_rmse}, the cross validation RMSEs for 2nd and 3rd order models dropped gradually as $\lambda$ increased initially, but it started bouncing back  after reaching the bottom of the curve (the most optimal $\lambda$ value), and the benefit of regularization was slowly diminishing because $\lambda$ started driving all the weights towards 0 as it continued to increase. 
+
+\justify
 
 \end{document}
