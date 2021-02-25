@@ -146,55 +146,12 @@ def train_logistic_regression(x, y, learning_rate=0.01 / 4600, iteration=1000):
     return w, learning_objectives
 
 
-def plot_logistic_regression_learning_objectives(x, y):
-    """
-    Plot the learning objectives against the iteration in a 10-fold cross validation
-    :param x:
-    :param y:
-    :return:
-    """
-    k_fold = KFold(n_splits=10, random_state=1, shuffle=True)
-    learning_objectives_all = []
-    for run_number, (train_index, test_index) in enumerate(k_fold.split(x)):
-        x_train, x_test = x[train_index], x[test_index]
-        y_train, y_test = y[train_index], y[test_index]
-        w, learning_objectives = train_logistic_regression(x_train, y_train)
-        y_pred = ((sigmoid(x_test @ w) > 0.5).astype(int) - 0.5) * 2
-        print(f'Logistic regression run_number: {run_number + 1} '
-              f'Accuracy: {accuracy_score(y_test, y_pred)}')
-        learning_objectives_all.extend(
-            list(map(lambda t: (str(run_number + 1), *t), learning_objectives)))
-
-    learning_objective_pd = pd.DataFrame(learning_objectives_all, columns=['run_number',
-                                                                           'iteration',
-                                                                           'learning_objective'])
-    figure_path = path.join(BAYES_CLASSIFIER_DATA, 'logistic_regression_learning_objective.png')
-    plot_learning_objectives(learning_objective_pd, figure_path)
-
-
-def plot_learning_objectives(learning_objective_pd, file_path):
-    """
-
-    :param learning_objective_pd:
-    :param file_path:
-    :return:
-    """
-    plt.subplots(figsize=(12, 9))
-    sns.lineplot(data=learning_objective_pd,
-                 x='iteration',
-                 y='learning_objective',
-                 hue='run_number')
-    # Save the plot
-    plt.savefig(file_path)
-    # Clear the figure
-    plt.clf()
-
-
-def train_newton_logistic_regression(x_train, y_train):
+def train_newton_logistic_regression(x_train, y_train, iteration=100):
     """
     Training a logistic regression using newton's method
     :param x_train:
     :param y_train:
+    :param iteration:
     :return:
     """
     n, m = np.shape(x_train)
@@ -202,7 +159,7 @@ def train_newton_logistic_regression(x_train, y_train):
 
     learning_objectives = []
 
-    for i in range(0, 100):
+    for i in range(0, iteration):
         S = np.diag(np.squeeze((1 - sigmoid(x_train @ w * y_train))))
         # the matrix may not be invertible so adding an identity matrix to make this invertible
         M = np.diag(np.squeeze((1 - sigmoid(x_train @ w * y_train)) * sigmoid(
@@ -217,13 +174,17 @@ def train_newton_logistic_regression(x_train, y_train):
     return w, learning_objectives
 
 
-def plot_newton_logistic_regression(x, y):
+def plot_logistic_regression(x, y, model_name, is_newton=False):
     """
-
+    
     :param x:
     :param y:
-    :return:
+    :param model_name:
+    :param is_newton: 
+    :return: 
     """
+    y_true_all = []
+    y_pred_all = []
     learning_objectives_all = []
 
     k_fold = KFold(n_splits=10, random_state=1, shuffle=True)
@@ -232,21 +193,44 @@ def plot_newton_logistic_regression(x, y):
         x_train, x_test = x[train_index], x[test_index]
         y_train, y_test = y[train_index], y[test_index]
 
-        w, learning_objectives = train_newton_logistic_regression(x_train, y_train)
+        if is_newton:
+            w, learning_objectives = train_newton_logistic_regression(x_train, y_train)
+        else:
+            w, learning_objectives = train_logistic_regression(x_train, y_train)
 
         y_pred = ((sigmoid(x_test @ w) > 0.5).astype(int) - 0.5) * 2
 
-        print(f'Newton method run_number: {run_number + 1} '
+        print(f'{model_name} run_number: {run_number + 1} '
               f'Accuracy: {accuracy_score(y_test, y_pred)}')
 
         learning_objectives_all.extend(
             list(map(lambda t: (str(run_number + 1), *t), learning_objectives)))
 
+        y_true_all.append(y_test)
+        y_pred_all.append(y_pred)
+
+    conf_matrix = confusion_matrix(np.concatenate(y_true_all), np.concatenate(y_pred_all))
+    accuracy = np.sum(np.diagonal(conf_matrix)) / np.sum(conf_matrix)
+
+    print(f'{model_name} Confusion matrix:\n {conf_matrix}')
+    print(f'{model_name} Accuracy: {accuracy}')
+
     learning_objective_pd = pd.DataFrame(learning_objectives_all, columns=['run_number',
                                                                            'iteration',
                                                                            'learning_objective'])
-    figure_path = path.join(BAYES_CLASSIFIER_DATA, 'newton_learning_objective.png')
-    plot_learning_objectives(learning_objective_pd, figure_path)
+    figure_path = path.join(BAYES_CLASSIFIER_DATA,
+                            f'{model_name.replace(" ", "_")}_learning_objective.png')
+    plt.subplots(figsize=(12, 9))
+    sns.lineplot(data=learning_objective_pd,
+                 x='iteration',
+                 y='learning_objective',
+                 hue='run_number')
+    # Save the plot
+    plt.savefig(figure_path)
+    # Clear the figure
+    plt.clf()
+
+    # plot_learning_objectives(learning_objective_pd, figure_path)
 
 
 def main():
@@ -261,9 +245,9 @@ def main():
     # overwite the label 0 to 1 for logistic regression
     y[y == 0] = -1
     # Plotting learning objectives for logistic regression
-    plot_logistic_regression_learning_objectives(x, y)
+    plot_logistic_regression(x, y, model_name='logistic regression')
     # Plotting learning objectives for logistic regression using Newton's method
-    plot_newton_logistic_regression(x, y)
+    plot_logistic_regression(x, y, model_name='newton method', is_newton=True)
 
 
 if __name__ == '__main__':
