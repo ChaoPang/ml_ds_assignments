@@ -4,10 +4,12 @@ from os import path
 from typing import NamedTuple
 
 from sklearn.model_selection import KFold
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, accuracy_score
 
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+from scipy.special import expit as sigmoid
 
 INPUT_DATA = 'hw2-data'
 
@@ -87,8 +89,8 @@ def naive_bayes_k_fold_validation(x, y):
     conf_matrix = confusion_matrix(np.concatenate(y_true), np.concatenate(y_pred))
     accuracy = np.sum(np.diagonal(conf_matrix)) / np.sum(conf_matrix)
 
-    print(f'Confusion matrix:\n {conf_matrix}')
-    print(f'Accuracy: {accuracy}')
+    print(f'Bayes Classifier Confusion matrix:\n {conf_matrix}')
+    print(f'Bayes Classifier Accuracy: {accuracy}')
 
     lambda_0_avg = np.average(lambda_0, axis=0)
     lambda_1_avg = np.average(lambda_1, axis=0)
@@ -112,63 +114,139 @@ def naive_bayes_k_fold_validation(x, y):
     plt.clf()
 
 
-def sigmoid(x):
-    return np.exp(x) / (1 + np.exp(x))
+def compute_logistic_regression_objective_function(x, y, w):
+    """
+    Compute the learning objective for logistic regression
+
+    :param x:
+    :param y:
+    :param w:
+    :return:
+    """
+    return np.sum(- np.log(1 + np.exp(np.array(- x @ w * y, dtype=np.float128))))
 
 
-def compute_objective_function(x, y, w):
-    return np.sum(sigmoid(x @ w * y))
+def train_logistic_regression(x, y, learning_rate=0.01 / 4600, iteration=1000):
+    """
+    Training a logistic regression using steepest gradient ascent
 
-
-def train_logistic_regression(x, y, learning_rate=0.01 / 4600):
+    :param x:
+    :param y:
+    :param learning_rate:
+    :param iteration:
+    :return:
+    """
     n, m = np.shape(x)
     w = np.zeros([m, 1])
     learning_objectives = []
-    for i in range(1, 1001):
-        learning_objectives.append(compute_objective_function(x, y, w))
+    for i in range(0, iteration):
+        learning_objectives.append((i + 1, compute_logistic_regression_objective_function(x, y, w)))
         d_w = ((1 - sigmoid(np.multiply(x @ w, y))) * y).T @ x
         w += (learning_rate * d_w).T
     return w, learning_objectives
 
 
-def draw_learning_objective(x, y):
+def plot_logistic_regression_learning_objectives(x, y):
+    """
+    Plot the learning objectives against the iteration in a 10-fold cross validation
+    :param x:
+    :param y:
+    :return:
+    """
     k_fold = KFold(n_splits=10, random_state=1, shuffle=True)
     learning_objectives_all = []
-    for train_index, test_index in k_fold.split(x):
+    for run_number, (train_index, test_index) in enumerate(k_fold.split(x)):
         x_train, x_test = x[train_index], x[test_index]
         y_train, y_test = y[train_index], y[test_index]
         w, learning_objectives = train_logistic_regression(x_train, y_train)
-        learning_objectives_all.append(learning_objectives)
+        y_pred = ((sigmoid(x_test @ w) > 0.5).astype(int) - 0.5) * 2
+        print(f'Logistic regression run_number: {run_number + 1} '
+              f'Accuracy: {accuracy_score(y_test, y_pred)}')
+        learning_objectives_all.extend(
+            list(map(lambda t: (str(run_number + 1), *t), learning_objectives)))
 
-    learning_objective_pd = pd.DataFrame(np.asarray(learning_objectives_all).T)
-    learning_objective_pd = learning_objective_pd.reset_index()
-    learning_objective_pd['index'] = learning_objective_pd.index + 1
+    learning_objective_pd = pd.DataFrame(learning_objectives_all, columns=['run_number',
+                                                                           'iteration',
+                                                                           'learning_objective'])
+    figure_path = path.join(BAYES_CLASSIFIER_DATA, 'logistic_regression_learning_objective.png')
+    plot_learning_objectives(learning_objective_pd, figure_path)
 
-    unpivoted_learning_objective_pd = pd.melt(learning_objective_pd, id_vars='index',
-                                              value_vars=learning_objective_pd.columns[1:])
-    unpivoted_learning_objective_pd['variable'] = unpivoted_learning_objective_pd['variable'] + 1
-    unpivoted_learning_objective_pd['variable'] = unpivoted_learning_objective_pd[
-        'variable'].astype(
-        str).apply(lambda v: f'run {v}')
 
-    unpivoted_learning_objective_pd.rename(
-        columns={'index': 'iteration',
-                 'value': 'learning_objective',
-                 'variable': 'run_number'
-                 },
-        inplace=True)
+def plot_learning_objectives(learning_objective_pd, file_path):
+    """
 
+    :param learning_objective_pd:
+    :param file_path:
+    :return:
+    """
     plt.subplots(figsize=(12, 9))
-    sns.lineplot(data=unpivoted_learning_objective_pd,
+    sns.lineplot(data=learning_objective_pd,
                  x='iteration',
                  y='learning_objective',
                  hue='run_number')
-
     # Save the plot
-    plt.savefig(path.join(BAYES_CLASSIFIER_DATA, 'learning_objective.png'))
-
+    plt.savefig(file_path)
     # Clear the figure
     plt.clf()
+
+
+def train_newton_logistic_regression(x_train, y_train):
+    """
+    Training a logistic regression using newton's method
+    :param x_train:
+    :param y_train:
+    :return:
+    """
+    n, m = np.shape(x_train)
+    w = np.zeros([m, 1])
+
+    learning_objectives = []
+
+    for i in range(0, 100):
+        S = np.diag(np.squeeze((1 - sigmoid(x_train @ w * y_train))))
+        # the matrix may not be invertible so adding an identity matrix to make this invertible
+        M = np.diag(np.squeeze((1 - sigmoid(x_train @ w * y_train)) * sigmoid(
+            x_train @ w * y_train))) + np.identity(n)
+
+        w = np.linalg.inv(x_train.T @ M @ x_train) @ x_train.T @ (M @ x_train @ w + S @ y_train)
+
+        learning_objective = compute_logistic_regression_objective_function(x_train, y_train, w)
+
+        learning_objectives.append((i + 1, learning_objective))
+
+    return w, learning_objectives
+
+
+def plot_newton_logistic_regression(x, y):
+    """
+
+    :param x:
+    :param y:
+    :return:
+    """
+    learning_objectives_all = []
+
+    k_fold = KFold(n_splits=10, random_state=1, shuffle=True)
+
+    for run_number, (train_index, test_index) in enumerate(k_fold.split(x)):
+        x_train, x_test = x[train_index], x[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+
+        w, learning_objectives = train_newton_logistic_regression(x_train, y_train)
+
+        y_pred = ((sigmoid(x_test @ w) > 0.5).astype(int) - 0.5) * 2
+
+        print(f'Newton method run_number: {run_number + 1} '
+              f'Accuracy: {accuracy_score(y_test, y_pred)}')
+
+        learning_objectives_all.extend(
+            list(map(lambda t: (str(run_number + 1), *t), learning_objectives)))
+
+    learning_objective_pd = pd.DataFrame(learning_objectives_all, columns=['run_number',
+                                                                           'iteration',
+                                                                           'learning_objective'])
+    figure_path = path.join(BAYES_CLASSIFIER_DATA, 'newton_learning_objective.png')
+    plot_learning_objectives(learning_objective_pd, figure_path)
 
 
 def main():
@@ -182,7 +260,10 @@ def main():
     x = np.hstack([x, np.ones([np.shape(x)[0], 1]).astype(int)])
     # overwite the label 0 to 1 for logistic regression
     y[y == 0] = -1
-    draw_learning_objective(x, y)
+    # Plotting learning objectives for logistic regression
+    plot_logistic_regression_learning_objectives(x, y)
+    # Plotting learning objectives for logistic regression using Newton's method
+    plot_newton_logistic_regression(x, y)
 
 
 if __name__ == '__main__':
