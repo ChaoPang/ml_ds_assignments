@@ -5,6 +5,10 @@
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{bbm}
+\usepackage{tablefootnote}
+\usepackage{longtable}
+\usepackage{csvsimple}
+\usepackage{booktabs}
 
 \graphicspath{ {hw1-data/} }
 
@@ -83,5 +87,186 @@ L= \sum_{i=1}^{n} \ln {p(y_{i}|\pi)} +  \sum_{d=1}^{D} \Biggl( \ln{ \frac{ \lamb
 \]
 where $y \in \{0, 1\}$
 
+\pagebreak
+
+\section* {Problem 2}
+\justify (a) the confusion matrix and the accuracy for naive Bayes classifier are shown below
+
+\begin{center}
+\begin{tabular}{ |c|c|c| } 
+ \hline
+  & Predicted 0  & Predicted 1 \\ 
+ \hline
+ Actual 0 & TN = 2295 & FP = 492 \\ 
+  \hline
+Actual 1  & FN = 99 &  TP = 1714 \\ 
+ \hline
+\end{tabular}
+\end{center}
+
+\justify where TN is true negative, FP is false positive, FN is false negative, and TP is true positive. The overall accuracy is \textbf{$87.15\%$}
+
+
+\justify (b) \textbf{Figure~\ref{fig:lambda_stem}} shows that the $\lambda$ values in 16th dimension (\textbf{free}) and 52nd dimension (\textbf{!}) are much higher in spam than non-spam, indicating that the presence of these two words are highly suggestive of a spam email. 
+
+\begin{figure}[h]
+\includegraphics[scale=0.5]{hw2-data/Bayes_classifier/lambda_stem.png}
+\centering
+\caption{Plot stem plot for 54 dimensions for spam and non-spam}
+\label{fig:lambda_stem}
+\end{figure}
+
+\pagebreak
+
+\justify (c) plot the training function per each iteration for 10 runs in the same figure for logistic regression
+\begin{figure}[h]
+\includegraphics[scale=0.4]{hw2-data/Bayes_classifier/logistic_regression_learning_objective.png}
+\centering
+\caption{plot the training function each iteration for 10 runs for logistic regression}
+\label{fig:logistic_regression_learning_objective}
+\end{figure}
+
+
+\justify (d) Derive the update for $w_{t+1}$ for Newton's method
+
+\[
+L(w) \approx L^{'} (w)   \equiv L(w_{t}) + (w - w_{t})^{T} \nabla{L(w_{t})} + \frac{1}{2} (w - w_{t})^{T} \nabla^{2}{L(w_{t})} (w - w_{t})
+\]
+
+\justify Solution: set $w_{t+1} = arg\;max_{w} L^{'} (w) $ and $\nabla^{2}{L(w_{t})}$ is symmetric
+
+\begin{align*}
+L^{'} (w) =& L(w_{t}) + w^{T} \nabla{L(w_{t})}  - w_{t}^{T} \nabla{L(w_{t})} \\
+&+ \frac{1}{2} \Biggl( w^{T} \nabla^{2}{L(w_{t})} w  - w^{T}\nabla^{2}{L(w_{t})}  w_{t} - w^{T}_{t} \nabla^{2}{L(w_{t})} w + w^{T}_{t} \nabla^{2}{L(w_{t})}  w_{t}\Biggr) \\
+=& L(w_{t}) + w^{T} \nabla{L(w_{t})}  - w_{t}^{T} \nabla{L(w_{t})} \\
+&+ \frac{1}{2} \Biggl( w^{T} \nabla^{2}{L(w_{t})} w  - 2w^{T}\nabla^{2}{L(w_{t})}  w_{t} + w^{T}_{t} \nabla^{2}{L(w_{t})}  w_{t} \Biggr)
+\end{align*}
+
+\justify Solve for w
+\[
+\nabla{L^{'}(w)} =  \nabla{L(w_{t}})^{T} + w^{T} \nabla^{2}{L(w_{t})} - w_{t}^{T} \nabla^{2}{L(w_{t})} = 0
+\]
+
+\[
+\nabla^{2}{L(w_{t})}  w =   \nabla^{2}{L(w_{t})} w_{t} - \nabla{L(w_{t}})  \\
+\]
+
+\[
+w=  w_{t} - \nabla^{2}{L(w_{t})}^{-1} \; \nabla{L(w_{t}}) 
+\]
+
+\justify we have the first order derivative w.r.t to w 
+
+\[
+\nabla{L(w}) = \sum_{i=1}^{n} (1 - \sigma_{i}(y_{i} \cdot w)) y_{i} x_{i}
+\]
+
+\justify this can be written in the matrix form
+\[
+\nabla{L(w}) = X^{T}SY
+\]
+where $S$ is a n $\times$ n diagonal matrix, where $S_{ii} = 1 - \sigma_{i} ({y_{i} \cdot w})$
+
+\-
+\justify We need to compute the second order derivative w.r.t to w, the Hessian matrix
+
+\[
+\nabla{L(w}) = \sum_{i=1}^{n} (1 - \frac{e^{y_{i} x_{i}^{T} w}} {(1 + e^{y_{i} x_{i}^{T} w})} ) y_{i} x_{i}
+\]
+
+\[
+\nabla{L(w}) = \sum_{i=1}^{n} ( 1 - \frac{1} {(1 + e^{-y_{i} x_{i}^{T} w})} ) y_{i} x_{i}
+\]
+
+\[
+\nabla^{2}{L(w}) = \sum_{i=1}^{n} - \frac{ e^{-y_{i} x_{i}^{T} w } } {(1 + e^{-y_{i} x_{i}^{T} w})^{2}}  y_{i}^{2} x_{i} x_{i}^{T}
+\]
+
+\[
+\nabla^{2}{L(w}) = \sum_{i=1}^{n} - \sigma_{i} ({y_{i} \cdot w})( 1 - \sigma_{i} ({y_{i} \cdot w})) x_{i} x_{i}^{T}
+\]
+\-
+\justify $\nabla^{2}{L(w})$ can be written in the matrix quadratic form 
+\[
+\nabla^{2}{L(w}) = - X^{T} M X
+\]
+where $M$ is a n $\times$ n diagonal matrix, where $M_{ii} = \sigma_{i} ({y_{i} \cdot w})( 1 - \sigma_{i} ({y_{i} \cdot w}))$
+
+\-
+\justify Finally, we can plug the gradient and Hessian matrix back in
+
+\begin{align*}
+w &=  w_{t} + (X^{T} M X)^{-1} (X^{T}SY)\\
+&=  (X^{T} M X)^{-1} X^{T} (M X w_{t} + SY)\\
+\end{align*}
+
+\-
+\justify \textbf{Figure~\ref{fig:newton_method_learning_objective}} for plotting training function per each iteration for 10 runs for Newton's method is shown in the next page
+
+\begin{figure}[h]
+\includegraphics[scale=0.40]{hw2-data/Bayes_classifier/newton_method_learning_objective.png}
+\centering
+\caption{plot the training function per each iteration for 10 runs for Newton's method}
+\label{fig:newton_method_learning_objective}
+\end{figure}
+
+\pagebreak
+
+\justify (e) the confusion matrix and the accuracy for Newton's method are shown below
+
+\begin{center}
+\begin{tabular}{ |c|c|c| } 
+ \hline
+  & Predicted 0  & Predicted 1 \\ 
+ \hline
+ Actual 0 & TN = 2645 & FP = 142 \\ 
+  \hline
+Actual 1  & FN = 263 &  TP = 1550 \\ 
+ \hline
+\end{tabular}
+\end{center}
+where TN is true negative, FP is false positive, FN is false negative, and TP is true positive. The overall accuracy is \textbf{$91.20\%$}
+
+\pagebreak
+
+\section* {Problem 3}
+
+\justify (a) the table below shows the rmse associated with every combination of \textbf{b} and $\sigma^{2}$. 
+
+\begin{center}
+\begin{tabular}{lrrrrrrrrrr}
+\toprule
+\;\;\;  $\sigma^2$ &   0.1 &   0.2 &   0.3 &   0.4 &   0.5 &   0.6 &   0.7 &   0.8 &   0.9 &   1.0 \\
+b  &       &       &       &       &       &       &       &       &       &       \\
+\midrule
+5  &  1.97 &  1.93 &  1.92 &  1.92 &  1.92 &  1.93 &  1.93 &  1.94 &  1.95 &  1.95 \\
+7  &  1.92 &  1.90 &  1.91 &  1.92 &  1.92 &  1.93 &  1.94 &  1.95 &  1.96 &  1.97 \\
+9  &  1.90 &  1.90 &  1.92 &  1.93 &  1.95 &  1.96 &  1.97 &  1.98 &  1.98 &  1.99 \\
+11 &  1.89 &  1.91 &  1.94 &  1.96 &  1.97 &  1.99 &  2.00 &  2.01 &  2.01 &  2.02 \\
+13 &  1.90 &  1.94 &  1.96 &  1.99 &  2.00 &  2.01 &  2.02 &  2.03 &  2.04 &  2.05 \\
+15 &  1.91 &  1.96 &  1.99 &  2.01 &  2.03 &  2.04 &  2.05 &  2.06 &  2.07 &  2.07 \\
+\bottomrule
+\label{table:rmse_table}
+\end{tabular}
+\end{center}
+
+\justify (b) Based on the cross validation results, the combination that generated the lowest RMSE in the test set is when $b=11$ and $\sigma^2=0.1$. Below is the metrics generated from the first homework using polynomial regression
+\begin{itemize}
+	\item 1st order polynomial regression: $\lambda = 0, RMSE_{min} \approx 2.634$
+	\item 2nd order polynomial regression: $\lambda = 51, RMSE_{min} \approx 2.13$
+	\item 3rd order polynomial regression: $\lambda = 52, RMSE_{min} \approx 2.10$
+\end{itemize} 
+
+\justify It seems that Gaussian Process had a better performance in terms of RMSE than the polynomial regression in the test set. 
+
+
+\pagebreak
+\justify (c) Plot the predicted mean and the original data points from the training data
+\begin{figure}[h]
+\includegraphics[scale=0.40]{hw2-data/Gaussian_process/car_weight_rmse.png}
+\centering
+\caption{Predicted mean and the original data points}
+\label{fig:car_weight_rmse}
+\end{figure}
 
 \end{document}
