@@ -138,27 +138,29 @@ def compute_logistic_regression_objective_function(x, y, w):
     return np.sum(np.log(sigmoid(x @ w * y)))
 
 
-def train_logistic_regression(x, y, learning_rate=0.01 / 4600, iteration=1000):
+def train_logistic_regression_steepest_ascent(x_train, y_train, learning_rate=0.01 / 4600,
+                                              iteration=1000):
     """
     Training a logistic regression using steepest gradient ascent
 
-    :param x:
-    :param y:
+    :param x_train:
+    :param y_train:
     :param learning_rate:
     :param iteration:
     :return:
     """
-    n, m = np.shape(x)
+    n, m = np.shape(x_train)
     w = np.zeros([m, 1])
     learning_objectives = []
     for i in range(0, iteration):
-        learning_objectives.append((i + 1, compute_logistic_regression_objective_function(x, y, w)))
-        d_w = ((1 - sigmoid(np.multiply(x @ w, y))) * y).T @ x
+        learning_objectives.append(
+            (i + 1, compute_logistic_regression_objective_function(x_train, y_train, w)))
+        d_w = ((1 - sigmoid(x_train @ w * y_train)) * y_train).T @ x_train
         w += (learning_rate * d_w).T
     return w, learning_objectives
 
 
-def train_newton_logistic_regression(x_train, y_train, iteration=100):
+def train_logistic_regression_newton(x_train, y_train, iteration=100):
     """
     Training a logistic regression using newton's method
     :param x_train:
@@ -193,12 +195,14 @@ def train_newton_logistic_regression(x_train, y_train, iteration=100):
 
 def plot_logistic_regression(x, y, model_name, is_newton=False):
     """
-    
+    Run logistic regression using 10-fold cross validation with either steepest ascent algorithm
+    or Newton's method. Plot the learning objectives against iterations.
+
     :param x:
     :param y:
     :param model_name:
-    :param is_newton: 
-    :return: 
+    :param is_newton:
+    :return:
     """
     y_true_all = []
     y_pred_all = []
@@ -211,9 +215,9 @@ def plot_logistic_regression(x, y, model_name, is_newton=False):
         y_train, y_test = y[train_index], y[test_index]
 
         if is_newton:
-            w, learning_objectives = train_newton_logistic_regression(x_train, y_train)
+            w, learning_objectives = train_logistic_regression_newton(x_train, y_train)
         else:
-            w, learning_objectives = train_logistic_regression(x_train, y_train)
+            w, learning_objectives = train_logistic_regression_steepest_ascent(x_train, y_train)
 
         y_pred = ((sigmoid(x_test @ w) > 0.5).astype(int) - 0.5) * 2
 
@@ -286,6 +290,13 @@ def gaussian_process_regression(x_train, y_train, x_test, b, sigma_square):
 
 
 def compute_rmse(y_true, y_pred):
+    """
+    Helper functio ncompute RMSE
+
+    :param y_true:
+    :param y_pred:
+    :return:
+    """
     num_of_rows, _ = np.shape(y_true)
     return np.sqrt(np.sum((y_true - y_pred) ** 2) / num_of_rows)
 

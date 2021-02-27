@@ -155,20 +155,31 @@ L^{'} (w) =& L(w_{t}) + w^{T} \nabla{L(w_{t})}  - w_{t}^{T} \nabla{L(w_{t})} \\
 w=  w_{t} - \nabla^{2}{L(w_{t})}^{-1} \; \nabla{L(w_{t}}) 
 \]
 
+\-
+
 \justify we have the first order derivative w.r.t to w 
+
+\-
 
 \[
 \nabla{L(w}) = \sum_{i=1}^{n} (1 - \sigma_{i}(y_{i} \cdot w)) y_{i} x_{i}
 \]
 
+\-
+
 \justify this can be written in the matrix form
+
+\-
+
 \[
 \nabla{L(w}) = X^{T}SY
 \]
-$S$ is a n $\times$ n diagonal matrix, where $S_{ii} = 1 - \sigma_{i} ({y_{i} \cdot w})$
 
 \-
-\justify We need to compute the second order derivative w.r.t to w, the Hessian matrix
+
+\justify $S$ is a n $\times$ n diagonal matrix, where $S_{ii} = 1 - \sigma_{i} ({y_{i} \cdot w})$. We need to compute the second order derivative w.r.t to w, the Hessian matrix
+
+\-
 
 \[
 \nabla{L(w}) = \sum_{i=1}^{n} (1 - \frac{e^{y_{i} x_{i}^{T} w}} {(1 + e^{y_{i} x_{i}^{T} w})} ) y_{i} x_{i}
@@ -185,10 +196,13 @@ $S$ is a n $\times$ n diagonal matrix, where $S_{ii} = 1 - \sigma_{i} ({y_{i} \c
 \[
 \nabla^{2}{L(w}) = \sum_{i=1}^{n} - \sigma_{i} ({y_{i} \cdot w})( 1 - \sigma_{i} ({y_{i} \cdot w})) x_{i} x_{i}^{T}
 \]
+
 \-
+
 \justify $\nabla^{2}{L(w})$ can be written in the matrix quadratic form 
 
 \-
+
 
 \[
 \nabla^{2}{L(w}) = - X^{T} M X
@@ -196,7 +210,7 @@ $S$ is a n $\times$ n diagonal matrix, where $S_{ii} = 1 - \sigma_{i} ({y_{i} \c
 
 \-
 
-$M$ is a n $\times$ n diagonal matrix, where $M_{ii} = \sigma_{i} ({y_{i} \cdot w})( 1 - \sigma_{i} ({y_{i} \cdot w}))$. Finally, we can plug the gradient and Hessian matrix back in
+\justify $M$ is a n $\times$ n diagonal matrix, where $M_{ii} = \sigma_{i} ({y_{i} \cdot w})( 1 - \sigma_{i} ({y_{i} \cdot w}))$. Finally, we can plug the gradient and Hessian matrix back in
 
 \-
 
@@ -205,7 +219,6 @@ w =  w_{t} + (X^{T} M X)^{-1} (X^{T}SY)
 \]
 
 \-
-
 \justify $S$ is a n $\times$ n diagonal matrix, where $S_{ii} = 1 - \sigma_{i} ({y_{i} \cdot w})$,  and $M$ is a n $\times$ n diagonal matrix, where $M_{ii} = \sigma_{i} ({y_{i} \cdot w})( 1 - \sigma_{i} ({y_{i} \cdot w}))$. In doing the 10-fold cross validation, some of the runs threw an error that the matrix $X^{T} M X$ was not invertible, an identity matrix was added to $X^{T} M X$ to get around this problem. Therefore we have the following
 
 \-
