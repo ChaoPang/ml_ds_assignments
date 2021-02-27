@@ -327,6 +327,30 @@ def explore_hyperparameters_cross_validation(x_test, x_train, y_test, y_train):
     print(metrics_pd.sort_values('rmse'))
 
 
+def plot_gaussian_process(x_train_gpr_car_weight, y_train_gpr):
+    """
+    Create a scatterplot and lineplot to explore how Gaussian Process interpolates between data
+    points
+
+    :param x_train_gpr_car_weight:
+    :param y_train_gpr:
+    :return:
+    """
+    mean, cov = gaussian_process_regression(x_train_gpr_car_weight, y_train_gpr,
+                                            x_train_gpr_car_weight,
+                                            5, 2)
+    fig, ax = plt.subplots(figsize=(12, 9))
+    # Set common labels
+    ax.set_xlabel('Car weight')
+    ax.set_ylabel('Miles per gallon')
+    sns.scatterplot(ax=ax, x=np.squeeze(x_train_gpr_car_weight), y=np.squeeze(y_train_gpr))
+    sns.lineplot(ax=ax, x=np.squeeze(x_train_gpr_car_weight), y=np.squeeze(mean), color='red')
+    # Save the plot
+    plt.savefig(path.join(GAUSSIAN_PROCESS_DATA, 'car_weight_rmse.png'))
+    # Clear the figure
+    plt.clf()
+
+
 def main():
     # Load data for naive bayes classifier and logistic regression
     x = pd.read_csv(BAYES_CLASSIFIER_X, header=None, sep=',').values
@@ -363,23 +387,7 @@ def main():
     # data point
     # Take the 4th dimension only
     x_train_gpr_car_weight = x_train_gpr[:, 3:4]
-    mean, cov = gaussian_process_regression(x_train_gpr_car_weight, y_train_gpr,
-                                            x_train_gpr_car_weight,
-                                            5, 2)
-
-    fig, ax = plt.subplots(figsize=(12, 9))
-    # Set common labels
-    ax.set_xlabel('Car weight')
-    ax.set_ylabel('Miles per gallon')
-
-    sns.scatterplot(ax=ax, x=np.squeeze(x_train_gpr_car_weight), y=np.squeeze(y_train_gpr))
-    sns.lineplot(ax=ax, x=np.squeeze(x_train_gpr_car_weight), y=np.squeeze(mean))
-
-    # Save the plot
-    plt.savefig(path.join(GAUSSIAN_PROCESS_DATA, 'car_weight_rmse.png'))
-
-    # Clear the figure
-    plt.clf()
+    plot_gaussian_process(x_train_gpr_car_weight, y_train_gpr)
 
 
 if __name__ == '__main__':
