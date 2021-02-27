@@ -60,3 +60,21 @@ if __name__ == '__main__':
     Author: Chao Pang 
     """
     main()
+
+# +
+x_train_gpr_car_weight = x_train_gpr[:, 3:4]
+mean, cov = gaussian_process_regression(x_train_gpr_car_weight, y_train_gpr,
+                                        x_train_gpr_car_weight,
+                                        b=0.0001, sigma_square=2)
+
+# # +
+fig, ax = plt.subplots(figsize=(12, 9))
+# Set common labels
+ax.set_xlabel('Car weight')
+ax.set_ylabel('Miles per gallon')
+
+sns.scatterplot(ax=ax, x=np.squeeze(x_train_gpr_car_weight), y=np.squeeze(y_train_gpr))
+sns.lineplot(ax=ax, x=np.squeeze(x_train_gpr_car_weight), y=np.squeeze(mean))
+# -
+
+

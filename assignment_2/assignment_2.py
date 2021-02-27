@@ -175,9 +175,14 @@ def train_newton_logistic_regression(x_train, y_train, iteration=100):
         S = np.diag(np.squeeze((1 - sigmoid(x_train @ w * y_train))))
         # the matrix may not be invertible so adding an identity matrix to make this invertible
         M = np.diag(np.squeeze((1 - sigmoid(x_train @ w * y_train)) * sigmoid(
-            x_train @ w * y_train))) + np.identity(n)
+            x_train @ w * y_train)))
 
-        w = np.linalg.inv(x_train.T @ M @ x_train) @ x_train.T @ (M @ x_train @ w + S @ y_train)
+        # w = w_{t} + (X ^ {T} M X + I) ^ {-1}(X ^ {T}SY)
+
+        w = w + np.linalg.inv(x_train.T @ M @ x_train + np.identity(m)) @ x_train.T @ S @ y_train
+        #
+        # w = np.linalg.inv(x_train.T @ M @ x_train + np.identity(m)) @ x_train.T @ (
+        #         M @ x_train @ w + S @ y_train)
 
         learning_objective = compute_logistic_regression_objective_function(x_train, y_train, w)
 

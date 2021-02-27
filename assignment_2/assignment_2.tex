@@ -55,7 +55,7 @@ L= \sum_{i=1}^{n} \ln {p(y_{i}|\pi)} +  \sum_{d=1}^{D} \Biggl( \ln{ \frac{ \lamb
 \]
 
 \-
-\justify Ignore the first term because $\sum_{i=1}^{n} \ln {p(y_{i}|\pi)}$ is not related $\lambda$. We can ignore the sum over the dimension $d$ and remove $d$ notation temporarily since all dimensions can be treated the same way, simplify and rewrite the equation as the following, 
+\justify Ignore the first term because $\sum_{i=1}^{n} \ln {p(y_{i}|\pi)}$ doesn't depend on $\lambda$. We can ignore the sum over dimension $d$ and remove $d$ notation temporarily since all dimensions can be treated the same way, simplify and rewrite the equation as the following, 
 
 \begin{small}
 \[
@@ -165,7 +165,7 @@ w=  w_{t} - \nabla^{2}{L(w_{t})}^{-1} \; \nabla{L(w_{t}})
 \[
 \nabla{L(w}) = X^{T}SY
 \]
-where $S$ is a n $\times$ n diagonal matrix, where $S_{ii} = 1 - \sigma_{i} ({y_{i} \cdot w})$
+$S$ is a n $\times$ n diagonal matrix, where $S_{ii} = 1 - \sigma_{i} ({y_{i} \cdot w})$
 
 \-
 \justify We need to compute the second order derivative w.r.t to w, the Hessian matrix
@@ -187,21 +187,36 @@ where $S$ is a n $\times$ n diagonal matrix, where $S_{ii} = 1 - \sigma_{i} ({y_
 \]
 \-
 \justify $\nabla^{2}{L(w})$ can be written in the matrix quadratic form 
+
+\-
+
 \[
 \nabla^{2}{L(w}) = - X^{T} M X
 \]
-where $M$ is a n $\times$ n diagonal matrix, where $M_{ii} = \sigma_{i} ({y_{i} \cdot w})( 1 - \sigma_{i} ({y_{i} \cdot w}))$
 
 \-
-\justify Finally, we can plug the gradient and Hessian matrix back in
 
-\begin{align*}
-w &=  w_{t} + (X^{T} M X)^{-1} (X^{T}SY)\\
-&=  (X^{T} M X)^{-1} X^{T} (M X w_{t} + SY)\\
-\end{align*}
+$M$ is a n $\times$ n diagonal matrix, where $M_{ii} = \sigma_{i} ({y_{i} \cdot w})( 1 - \sigma_{i} ({y_{i} \cdot w}))$. Finally, we can plug the gradient and Hessian matrix back in
 
 \-
-\justify \textbf{Figure~\ref{fig:newton_method_learning_objective}} for plotting training function per each iteration for 10 runs for Newton's method is shown in the next page
+
+\[
+w =  w_{t} + (X^{T} M X)^{-1} (X^{T}SY)
+\]
+
+\-
+
+\justify $S$ is a n $\times$ n diagonal matrix, where $S_{ii} = 1 - \sigma_{i} ({y_{i} \cdot w})$,  and $M$ is a n $\times$ n diagonal matrix, where $M_{ii} = \sigma_{i} ({y_{i} \cdot w})( 1 - \sigma_{i} ({y_{i} \cdot w}))$. In doing the 10-fold cross validation, some of the runs threw an error that the matrix $X^{T} M X$ was not invertible, an identity matrix was added to $X^{T} M X$ to get around this problem. Therefore we have the following
+
+\-
+
+\[
+w =  w_{t} + (X^{T} M X + I)^{-1} (X^{T}SY)
+\]
+
+\-
+
+\justify \textbf{Figure~\ref{fig:newton_method_learning_objective}} shows that the learning objective increased much faster in Newton's method than in the steepest ascent algorithm shown in \textbf{Figure~\ref{fig:logistic_regression_learning_objective}}. All the runs in Newton's method seemed to have converged after 10 iterations, whereas it took a few hundred iterations for the algorithm to converge in the steepest ascent. 
 
 \begin{figure}[h]
 \includegraphics[scale=0.40]{hw2-data/Bayes_classifier/newton_method_learning_objective.png}
@@ -219,19 +234,19 @@ w &=  w_{t} + (X^{T} M X)^{-1} (X^{T}SY)\\
  \hline
   & Predicted 0  & Predicted 1 \\ 
  \hline
- Actual 0 & TN = 2645 & FP = 142 \\ 
+ Actual 0 & TN = 2648 & FP = 139 \\ 
   \hline
-Actual 1  & FN = 263 &  TP = 1550 \\ 
+Actual 1  & FN = 219 &  TP = 1594 \\ 
  \hline
 \end{tabular}
 \end{center}
-where TN is true negative, FP is false positive, FN is false negative, and TP is true positive. The overall accuracy is \textbf{$91.20\%$}
+where TN is true negative, FP is false positive, FN is false negative, and TP is true positive. The overall accuracy is \textbf{$92.21\%$}
 
 \pagebreak
 
 \section* {Problem 3}
 
-\justify (a) the table below shows the rmse associated with every combination of \textbf{b} and $\sigma^{2}$. 
+\justify (a) the table below shows the RMSE associated with every combination of b and $\sigma^{2}$. 
 
 \begin{center}
 \begin{tabular}{lrrrrrrrrrr}
@@ -242,7 +257,7 @@ b  &       &       &       &       &       &       &       &       &       &    
 5  &  1.97 &  1.93 &  1.92 &  1.92 &  1.92 &  1.93 &  1.93 &  1.94 &  1.95 &  1.95 \\
 7  &  1.92 &  1.90 &  1.91 &  1.92 &  1.92 &  1.93 &  1.94 &  1.95 &  1.96 &  1.97 \\
 9  &  1.90 &  1.90 &  1.92 &  1.93 &  1.95 &  1.96 &  1.97 &  1.98 &  1.98 &  1.99 \\
-11 &  1.89 &  1.91 &  1.94 &  1.96 &  1.97 &  1.99 &  2.00 &  2.01 &  2.01 &  2.02 \\
+11 &  \textbf{1.89} &  1.91 &  1.94 &  1.96 &  1.97 &  1.99 &  2.00 &  2.01 &  2.01 &  2.02 \\
 13 &  1.90 &  1.94 &  1.96 &  1.99 &  2.00 &  2.01 &  2.02 &  2.03 &  2.04 &  2.05 \\
 15 &  1.91 &  1.96 &  1.99 &  2.01 &  2.03 &  2.04 &  2.05 &  2.06 &  2.07 &  2.07 \\
 \bottomrule
@@ -257,8 +272,7 @@ b  &       &       &       &       &       &       &       &       &       &    
 	\item 3rd order polynomial regression: $\lambda = 52, RMSE_{min} \approx 2.10$
 \end{itemize} 
 
-\justify It seems that Gaussian Process had a better performance in terms of RMSE than the polynomial regression in the test set. 
-
+\justify It seems that Gaussian Process had a better performance in terms of RMSE than the other polynomial regression models in the test set. A potential drawback of using the Gaussian Process (GP) compared to Homework 1 (ridge regression (RR) ) could be the fact that we integrate out the parameter W in order to use Kernel functions, as a consequence,  we couldn't look at each dimension of W to understand how features interact with the response variable (unlike homework 1 where we looked at how W changed with different $\lambda$ values). Although GP did improve RMSE, it was done at a cost of explainability. 
 
 \pagebreak
 \justify (c) Plot the predicted mean and the original data points from the training data
