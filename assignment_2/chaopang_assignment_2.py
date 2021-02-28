@@ -7,6 +7,7 @@ from typing import NamedTuple
 
 from sklearn.model_selection import KFold
 from sklearn.metrics import confusion_matrix, accuracy_score
+from scipy.special import factorial
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -61,17 +62,24 @@ def train_naive_bayes_classifier(x, y):
 
 def naive_bayes_classifier_prediction(naive_bayes_classifier, x):
     """
-    Predict the classes using naive_bayes_classifier for a given x
+    Predict the classes using naive_bayes_classifier for a given x using the log probability. The
+    same term np.log(factorial(x)) is omitted from both log probabilities calculated for spam and
+    non-spam, the results should be the same.
+
     :param naive_bayes_classifier:
     :param x:
     :return:
     """
-    # Compute the log sum of the probabilities for each dimension for class 0 (non spam)
+    # Compute the log sum of the probabilities for each dimension for class 0 (non spam),
+    # np.log(factorial(x)) is omitted from both log probabilities
     log_prob_0 = np.log(naive_bayes_classifier.pi_0) + np.sum(
-        np.log(naive_bayes_classifier.lambda_0_d) * x - naive_bayes_classifier.lambda_0_d, axis=1)
-    # Compute the log sum of the probabilities for each dimension for class 1 (spam)
+        np.log(
+            naive_bayes_classifier.lambda_0_d) * x - naive_bayes_classifier.lambda_0_d, axis=1)
+    # Compute the log sum of the probabilities for each dimension for class 1 (spam),
+    # np.log(factorial(x)) is omitted from both log probabilities
     log_prob_1 = np.log(naive_bayes_classifier.pi_1) + np.sum(
-        np.log(naive_bayes_classifier.lambda_1_d) * x - naive_bayes_classifier.lambda_1_d, axis=1)
+        np.log(
+            naive_bayes_classifier.lambda_1_d) * x - naive_bayes_classifier.lambda_1_d, axis=1)
     return (log_prob_0 < log_prob_1).astype(int)
 
 
