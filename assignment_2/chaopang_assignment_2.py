@@ -64,7 +64,8 @@ def naive_bayes_classifier_prediction(naive_bayes_classifier, x):
     """
     Predict the classes using naive_bayes_classifier for a given x using the log probability. The
     same term np.log(factorial(x)) is omitted from both log probabilities calculated for spam and
-    non-spam, the results should be the same.
+    non-spam because this term is the same for both log probabilities, removing it should not
+    change the result.
 
     :param naive_bayes_classifier:
     :param x:
@@ -182,17 +183,16 @@ def train_logistic_regression_newton(x_train, y_train, iteration=100):
     learning_objectives = []
 
     for i in range(0, iteration):
+        # Calculate the diagonal matrix S according to the equation derived in the write-up
         S = np.diag(np.squeeze((1 - sigmoid(x_train @ w * y_train))))
-        # the matrix may not be invertible so adding an identity matrix to make this invertible
+
+        # Calculate the diagonal matrix M according to the equation derived in the write-up
         M = np.diag(np.squeeze((1 - sigmoid(x_train @ w * y_train)) * sigmoid(
             x_train @ w * y_train)))
 
-        # w = w_{t} + (X ^ {T} M X + I) ^ {-1}(X ^ {T}SY)
-
+        # the matrix x_train.T @ M @ x_train may not be invertible so adding an identity matrix
+        # to make this invertible
         w = w + np.linalg.inv(x_train.T @ M @ x_train + np.identity(m)) @ x_train.T @ S @ y_train
-        #
-        # w = np.linalg.inv(x_train.T @ M @ x_train + np.identity(m)) @ x_train.T @ (
-        #         M @ x_train @ w + S @ y_train)
 
         learning_objective = compute_logistic_regression_objective_function(x_train, y_train, w)
 
@@ -292,7 +292,9 @@ def gaussian_process_regression(x_train, y_train, x_test, b, sigma_square):
     K_3 = np.reshape([rbf_kernel(i, j, b) for i, j in product(x_test, x_test)], (n_t, n_t))
 
     mean = K_2 @ np.linalg.inv(np.identity(n) * sigma_square + K_1) @ y_train
-    cov = sigma_square + K_3 - K_2 @ np.linalg.inv(np.identity(n) * sigma_square + K_1) @ K_2.T
+    # Only getting the covariance on the diagonal line
+    cov = np.diag(
+        sigma_square + K_3 - K_2 @ np.linalg.inv(np.identity(n) * sigma_square + K_1) @ K_2.T)
 
     return mean, cov
 
