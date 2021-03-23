@@ -3,6 +3,8 @@ from os import path
 
 # import data related modules
 import numpy as np
+
+np.random.seed(100)
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
@@ -16,12 +18,8 @@ INPUT_FOLDER = 'hw3-data'
 PROB_1_X = path.join(INPUT_FOLDER, 'Prob1_X.csv')
 PROB_1_Y = path.join(INPUT_FOLDER, 'Prob1_y.csv')
 
-# Load data for problem 1
-x = pd.read_csv(PROB_1_X, header=None, sep=',').values
-y = pd.read_csv(PROB_1_Y, header=None, sep=',').values
 
-
-# ## least square solution 
+# ## least square solution
 # $ w_{ls} = (X^{T}X)^{-1}X^{T}y $
 
 class AdaBoostLinearClassifier:
@@ -45,11 +43,11 @@ class AdaBoostLinearClassifier:
     @property
     def data_dists(self):
         return self._data_dists
-    
+
     @property
     def alphas(self):
         return self._alphas
-    
+
     @property
     def epsilons(self):
         return self._epsilons
@@ -70,27 +68,32 @@ class AdaBoostLinearClassifier:
         self._reset_state()
 
         n, _ = np.shape(x_train)
+        # initial distribution on the data
         current_data_dist = np.ones(n) / n
 
         for t in range(0, self._iteration):
-
+            # Save the current data distribution for the t_th iteration
             self._data_dists.append(current_data_dist)
+            # Sample data using the current data distribution
             x_t, y_t = sample_data(x_train, y_train, current_data_dist)
+            # Calculate the least square solution
             w_ls_t = least_square_solution(x_t, y_t)
 
-            # compute weight error
+            # compute weight error on the entire dataset
             y_hat = np.sign(x_train @ w_ls_t)
-            epsilon_t = np.sum(current_data_dist @ (y_hat != y_train).astype(int))
-            # if error is larger than 0.5, flip the sign of the prediction
+            epsilon_t = np.sum(current_data_dist * np.squeeze((y_hat != y_train).astype(int)))
+            # if epsilon is larger than 0.5, flip the sign of the prediction
             if epsilon_t > 0.5:
                 w_ls_t *= -1
                 # re-calculate the prediction and error
                 y_hat = np.sign(x_train @ w_ls_t)
-                epsilon_t = np.sum(current_data_dist @ (y_hat != y_train).astype(int))
+                epsilon_t = np.sum(current_data_dist * np.squeeze((y_hat != y_train).astype(int)))
 
-            alpha_t = 1 / 2 * np.log((1 - epsilon_t) / epsilon_t)
-            current_data_dist = current_data_dist * np.squeeze(np.exp(-alpha_t * y_hat * y_train))
-            current_data_dist = current_data_dist / np.sum(current_data_dist)
+            # Calculate alpha given epislon
+            alpha_t = (1 / 2) * np.log((1 - epsilon_t) / epsilon_t)
+            # Update the data distribution using the alpha
+            data_dist_hat = current_data_dist * np.squeeze(np.exp(-alpha_t * y_hat * y_train))
+            current_data_dist = data_dist_hat / np.sum(data_dist_hat)
 
             self._classifiers.append(w_ls_t)
             self._alphas.append(alpha_t)
@@ -98,13 +101,19 @@ class AdaBoostLinearClassifier:
 
             training_error = 1 - accuracy_score(y_train, self.predict(x_train))
             training_error_upper_bound = self._compute_training_error_upper_bound()
-            print(f'Iteration {t} Training Error {training_error} Upper bound {training_error_upper_bound}')
+            print(
+                f'Iteration {t} Training Error {training_error} Upper bound {training_error_upper_bound}')
             self._training_errors.append((t, training_error))
             self._training_error_upper_bounds.append((t, training_error_upper_bound))
 
         return self
 
     def predict(self, x_test):
+        """
+        Predict using the all classifiers
+        :param x_test:
+        :return:
+        """
         classifier_Ws = np.hstack(self._classifiers)
         classifier_alphas = np.vstack(self._alphas)
         boosting_y_hat = np.sign(np.sign(x_test @ classifier_Ws) @ classifier_alphas)
@@ -112,42 +121,89 @@ class AdaBoostLinearClassifier:
 
 
 def least_square_solution(x_train, y_train):
-    w_ls = np.linalg.inv(x_train.T @ x_train) @ x_train.T @ y_train
-    return w_ls
+    """
+    The least square solution given a pair of x and y
+    :param x_train:
+    :param y_train:
+    :return:
+    """
+    return np.linalg.inv(x_train.T @ x_train) @ x_train.T @ y_train
 
 
-def sample_data(x_train, y_train, x_dist):
+def sample_data(x_train, y_train, data_dist):
+    """
+    Sample from x and y using the data distribution
+    :param x_train:
+    :param y_train:
+    :param data_dist:
+    :return:
+    """
     n, _ = np.shape(x_train)
     all_indexes = list(range(0, n))
-    sampled_indexes = np.random.choice(all_indexes, size=n, replace=True, p=x_dist)
+    sampled_indexes = np.random.choice(all_indexes, size=n, replace=True, p=data_dist)
     return x_train[sampled_indexes], y_train[sampled_indexes]
 
 
-classifier = AdaBoostLinearClassifier(iteration=2500)
-boosting_y_hat = classifier.train(x, y).predict(x)
+def adaboost_linear_classifier(x_train, y_train):
+    """
 
-confusion_matrix(y, boosting_y_hat)
+    :param x_train:
+    :param y_train:
+    :return:
+    """
+    classifier = AdaBoostLinearClassifier(iteration=2500)
+    boosting_y_hat = classifier.train(x_train, y_train).predict(x_train)
 
-accuracy_score(y, boosting_y_hat)
+    print(f'The confusion matrix:\n {confusion_matrix(y_train, boosting_y_hat)}')
 
-training_error_pd = pd.DataFrame(classifier.train_errors, columns=['iteration', 'error'])
-training_error_upper_bound_pd = pd.DataFrame(classifier.training_error_upper_bounds, columns=['iteration', 'upper_bound'])                           
+    print(f'The accuracy for adaboost linear regression {accuracy_score(y_train, boosting_y_hat)}')
 
-training_history_pd = pd.melt(training_error_pd.merge(training_error_upper_bound_pd, on='iteration'), 
+    training_error_pd = pd.DataFrame(classifier.train_errors, columns=['iteration', 'error'])
+    training_error_upper_bound_pd = pd.DataFrame(classifier.training_error_upper_bounds,
+                                                 columns=['iteration', 'upper_bound'])
+
+    training_history_pd = pd.melt(
+        training_error_pd.merge(training_error_upper_bound_pd, on='iteration'),
         id_vars='iteration', var_name='type',
         value_vars=['error', 'upper_bound'])
 
-sns.lineplot(data=training_history_pd,
-             x='iteration', y='value', hue='type')
+    # plt.subplots(figsize=(14, 8))
+    sns.lineplot(data=training_history_pd, x='iteration', y='value', hue='type')
+    # Save the plot
+    plt.savefig(path.join(INPUT_FOLDER, 'training_error.png'))
+    # Clear the figure
+    plt.clf()
 
-plt.stem(np.average(np.vstack(classifier.data_dists), axis=0),
-         use_line_collection=True)
+    # plt.subplots(figsize=(14, 8))
+    plt.stem(np.average(np.vstack(classifier.data_dists), axis=0), use_line_collection=True,
+             linefmt='-.')
+    plt.savefig(path.join(INPUT_FOLDER, 'stem.png'))
+    # Clear the figure
+    plt.clf()
 
-alpha_pd = pd.DataFrame(classifier.alphas, columns=['alpha']).reset_index()
-epsilon_pd = pd.DataFrame(classifier.epsilons, columns=['epsilon']).reset_index()
+    alpha_pd = pd.DataFrame(classifier.alphas, columns=['alpha']).reset_index()
+    epsilon_pd = pd.DataFrame(classifier.epsilons, columns=['epsilon']).reset_index()
 
-sns.lineplot(data=alpha_pd, x='index', y='alpha')
+    sns.lineplot(data=alpha_pd, x='index', y='alpha')
+    plt.savefig(path.join(INPUT_FOLDER, 'alpha.png'))
+    # Clear the figure
+    plt.clf()
 
-sns.lineplot(data=epsilon_pd, x='index', y='epsilon')
+    sns.lineplot(data=epsilon_pd, x='index', y='epsilon')
+    plt.savefig(path.join(INPUT_FOLDER, 'epsilon.png'))
+    # Clear the figure
+    plt.clf()
 
 
+def main():
+    # Load data for problem 1
+    x = pd.read_csv(PROB_1_X, header=None, sep=',').values
+    y = pd.read_csv(PROB_1_Y, header=None, sep=',').values
+    adaboost_linear_classifier(x, y)
+
+
+if __name__ == '__main__':
+    """
+    Author: Chao Pang 
+    """
+    main()
