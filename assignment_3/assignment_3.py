@@ -9,6 +9,7 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 from sklearn.metrics import confusion_matrix, accuracy_score
+from sklearn.metrics.pairwise import euclidean_distances
 
 # import plot modules
 import matplotlib.pyplot as plt
@@ -195,11 +196,95 @@ def adaboost_linear_classifier(x_train, y_train):
     plt.clf()
 
 
+def k_means(data, k_cluster, num_of_iterations=20):
+    """
+    Train a k_means algorithm
+    :param data:
+    :param k_cluster:
+    :param num_of_iterations:
+    :return:
+    """
+    history = []
+    _, m = np.shape(data)
+    k_means_mus = np.random.rand(k_cluster, m)
+    k_means_class = None
+    for iteration in range(num_of_iterations):
+        all_distance = euclidean_distances(data, k_means_mus, squared=True)
+        k_means_class = np.argmin(all_distance, axis=1)
+        learning_objective = np.sum(np.min(all_distance, axis=1))
+        for i in range(k_cluster):
+            k_means_mus[i] = np.mean(data[k_means_class == i], axis=0)
+        history.append((iteration + 1, str(k_cluster) + '-cluster', learning_objective))
+    return k_means_mus, np.reshape(k_means_class, (-1, 1)), history
+
+
+def plot_k_means():
+    n = 500
+    # Sample data from a Gaussian mixture model
+    w = [0.2, 0.5, 0.3]
+    mu = np.asarray([[0, 0], [3, 0], [0, 3]])
+    cov = np.reshape([1, 0, 0, 1], (2, 2))
+
+    randomly_generated_indexes = np.random.choice(a=[0, 1, 2], size=n, p=w)
+    unique, counts = np.unique(randomly_generated_indexes, return_counts=True)
+    data = []
+    for index, count in zip(unique, counts):
+        print(f'{index}: {count}')
+        data.append(np.random.multivariate_normal(mean=mu[index], cov=cov, size=count))
+    data = np.concatenate(data)
+
+    training_history = []
+    for k_cluster in range(2, 6):
+        _, k_means_classes, history = k_means(data, k_cluster)
+        training_history.extend(history)
+        # Plot K-means clusters for k is in (3, 5)
+        if k_cluster in [3, 5]:
+            plot_k_means_cluster(data, k_means_classes, k_cluster)
+    training_history_pd = pd.DataFrame(training_history,
+                                       columns=['iteration', 'K', 'learning_objective'])
+    training_history_pd['K'] = training_history_pd.K.apply(str)
+    fig, ax = plt.subplots(figsize=(12, 9))
+    sns.lineplot(ax=ax, data=training_history_pd, x='iteration', y='learning_objective', hue='K')
+    # Save the plot
+    plt.savefig(path.join(INPUT_FOLDER, 'k_means.png'))
+    # Clear the figure
+    plt.clf()
+
+
+def plot_k_means_cluster(data, k_means_classes, k_cluster):
+    """
+    Plot k_means clusters
+
+    :param data:
+    :param k_means_classes:
+    :param k_cluster:
+    :return:
+    """
+    k_means_cluster_pd = pd.DataFrame(np.hstack([data, k_means_classes]),
+                                      columns=['x1', 'x2', 'cluster'])
+    k_means_cluster_pd.cluster = k_means_cluster_pd.cluster.apply(
+        lambda c: 'cluster-' + str(int(c)))
+
+    fig, ax = plt.subplots(figsize=(12, 9))
+    sns.scatterplot(data=k_means_cluster_pd, x='x1', y='x2', hue='cluster', ax=ax)
+    k_means_centroids = k_means_cluster_pd.groupby('cluster').mean()
+    sns.scatterplot(data=k_means_centroids, x='x1', y='x2', ec='black', color='black', s=80,
+                    legend=False, ax=ax)
+
+    # Save the plot
+    plt.savefig(path.join(INPUT_FOLDER, f'k_means_{k_cluster}_clusters.png'))
+    # Clear the figure
+    plt.clf()
+
+
 def main():
     # Load data for problem 1
     x = pd.read_csv(PROB_1_X, header=None, sep=',').values
     y = pd.read_csv(PROB_1_Y, header=None, sep=',').values
     adaboost_linear_classifier(x, y)
+
+    # Problem 2
+    plot_k_means()
 
 
 if __name__ == '__main__':
