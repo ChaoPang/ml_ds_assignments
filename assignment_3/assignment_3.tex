@@ -1,0 +1,171 @@
+\documentclass[11pt]{report}
+ 
+\usepackage{ragged2e}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{subcaption}
+
+\graphicspath{ {hw1-data/} }
+
+\begin{document}
+
+\title{COMS 4721: Machine Learning for Data Science 
+Home work 3}
+\author{Chao Pang}
+ 
+\maketitle
+
+\section* {Problem 1}
+a) Plot the training errors for boosted least square classifier and plot the upper bound on the training error in the same figure. 
+
+\begin{figure}[h]
+\includegraphics[scale=0.4]{hw3-data/training_error.png}
+\centering
+\caption{Training errors for the boosted least square classifier and its upper bound}
+\label{fig:training_error}
+\end{figure}
+
+\pagebreak
+
+\justify b) Show a stem plot of the average of the distribution on the data across all 2500 iterations.
+
+\begin{figure}[h]
+\includegraphics[scale=0.4]{hw3-data/stem.png}
+\centering
+\caption{The average of the distribution on the data across 2500 iterations}
+\label{fig:training_error}
+\end{figure}
+
+\pagebreak
+
+\justify c) In two separate figures, plot $\epsilon_{t}$ and $\alpha_{t}$ as a function of t
+
+\justify \textbf{Figure~\ref{fig:epsilon_alpha}} shows that $\epsilon$ and $\alpha$ are "symmetric" and have a negative correlation, this makes sense because the way we calculate $\alpha$ using $\epsilon$ should present such a relationship. A classifier that has a low error ($\epsilon$) will have a high $\alpha$, therefore contributing more to the final prediction while a classifier with a high error ($\epsilon$) should have a low $\alpha$, therefore contributing less to the final prediction. 
+
+\begin{figure}[!htb]
+    \begin{subfigure}[b]{0.5\textwidth}
+      \includegraphics[width=\linewidth]{hw3-data/epsilon.png}
+      \caption{$\epsilon$ values over 2500 iterations}
+      \label{subfig-1:epsilon}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.5\textwidth}
+      \includegraphics[width=\linewidth]{hw3-data/alpha.png}
+      \caption{$\alpha$ values over 2500 iterations}
+      \label{subfig-2:alpha}
+    \end{subfigure}
+    \caption{Epsilon and Alpha values over 2500 iterations}
+    \label{fig:epsilon_alpha}
+\end{figure}
+\pagebreak
+
+\section * {Problem 2}
+a) For $K = 2, 3, 4, 5$, show on the same plot the value of the K-means objective function per iteration
+for 20 iterations (the algorithm may converge before that).
+
+\begin{figure}[h]
+\includegraphics[scale=0.4]{hw3-data/k_means.png}
+\centering
+\caption{K-means objective functions for $K=2,3,4,5$ over 20 iterations}
+\label{fig:k_means}
+\end{figure}
+
+\pagebreak
+
+\justify b) For $K = 3, 5$, plot the 500 data points and indicate the cluster of each for the final iteration by marking it in some way.
+\justify The k-mean algorithm was with the number of clusters set to 3. \textbf{Figure~\ref{fig:k_means_3_clusters}} shows the 3 clusters in different colors and the centroids are shown as the black dots in the center of each cluster. 
+
+\begin{figure}[hbt!]
+\includegraphics[scale=0.4]{hw3-data/k_means_3_clusters.png}
+\centering
+\caption{3 clusters identified by k-means algorithm, the centroids are shown as the black dots in the center of each cluster}
+\label{fig:k_means_3_clusters}
+\end{figure}
+\pagebreak
+
+\justify The k-mean algorithm was with the number of clusters set to 5. \textbf{Figure~\ref{fig:k_means_3_clusters}} shows the 5 clusters in different colors and the centroids are shown as the black dots in the center of each cluster. 
+\begin{figure}[hbt!]
+\includegraphics[scale=0.4]{hw3-data/k_means_5_clusters.png}
+\centering
+\caption{5 clusters identified by k-means algorithm, the centroids are shown as the black dots in the center of each cluster}
+\label{fig:k_means_5_clusters}
+\end{figure}
+
+\pagebreak
+
+\section * {Problem 3}
+a) Implement the EM algorithm for the GMM described in class. Using the training data provided, for each class separately, plot the log marginal objective function for a 3-Gaussian mixture model over 10 different runs and for iterations 5 to 30.
+
+\begin{figure}[hbt!]
+\includegraphics[scale=0.4]{hw3-data/learning_objective_spam.png}
+\centering
+\caption{log marginal learning objective for 3-GMM for spam class}
+\label{fig:k_means_3_clusters}
+\end{figure}
+\pagebreak
+\begin{figure}[hbt!]
+\includegraphics[scale=0.4]{hw3-data/learning_objective_non_spam.png}
+\centering
+\caption{log marginal learning objective for 3-GMM for the non spam class}
+\label{fig:k_means_3_clusters}
+\end{figure}
+\pagebreak
+
+\justify b) Using the best run for each class after 30 iterations, predict the testing data using a Bayes classifier and show the result in a 2 $\times$ 2 confusion matrix, along with the accuracy percentage. Repeat this process for a 1-, 2-, 3- and 4-Gaussian mixture model.
+
+\subsection * {K=1, accuracy = \textbf{$77.39\%$}}
+\begin{center}
+\begin{tabular}{ |c|c|c| } 
+ \hline
+  & Predicted 0  & Predicted 1 \\ 
+ \hline
+ Actual 0 & TN = 182 & FP = 96 \\ 
+  \hline
+Actual 1  & FN = 8 &  TP = 174 \\ 
+ \hline
+\end{tabular}
+\end{center}
+
+\subsection * {K=2, accuracy = \textbf{$80.22\%$}}
+\begin{center}
+\begin{tabular}{ |c|c|c| } 
+ \hline
+  & Predicted 0  & Predicted 1 \\ 
+ \hline
+ Actual 0 & TN = 194 & FP = 84 \\ 
+  \hline
+Actual 1  & FN = 7 &  TP = 175 \\ 
+ \hline
+\end{tabular}
+\end{center}
+
+\subsection * {K=3, accuracy = \textbf{$83.04\%$}}
+\begin{center}
+\begin{tabular}{ |c|c|c| } 
+ \hline
+  & Predicted 0  & Predicted 1 \\ 
+ \hline
+ Actual 0 & TN = 213 & FP = 65 \\ 
+  \hline
+Actual 1  & FN = 13 &  TP = 169 \\ 
+ \hline
+\end{tabular}
+\end{center}
+
+\subsection * {K=4, accuracy = \textbf{$81.09\%$}}
+\begin{center}
+\begin{tabular}{ |c|c|c| } 
+ \hline
+  & Predicted 0  & Predicted 1 \\ 
+ \hline
+ Actual 0 & TN = 203 & FP = 75 \\ 
+  \hline
+Actual 1  & FN = 12 &  TP = 170 \\ 
+ \hline
+\end{tabular}
+\end{center}
+
+\justify where TN is true negative, FP is false positive, FN is false negative, and TP is true positive. 
+
+\end{document}

@@ -4,9 +4,9 @@ from os import path
 # import data related modules
 import numpy as np
 
-np.random.seed(100)
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
+
+from scipy.stats import multivariate_normal
 
 from sklearn.metrics import confusion_matrix, accuracy_score
 from sklearn.metrics.pairwise import euclidean_distances
@@ -15,10 +15,18 @@ from sklearn.metrics.pairwise import euclidean_distances
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# +
 INPUT_FOLDER = 'hw3-data'
 PROB_1_X = path.join(INPUT_FOLDER, 'Prob1_X.csv')
 PROB_1_Y = path.join(INPUT_FOLDER, 'Prob1_y.csv')
 
+PROB_3_X_TRAIN = path.join(INPUT_FOLDER, 'Prob3_Xtrain.csv')
+PROB_3_Y_TRAIN = path.join(INPUT_FOLDER, 'Prob3_ytrain.csv')
+PROB_3_X_TEST = path.join(INPUT_FOLDER, 'Prob3_Xtest.csv')
+PROB_3_Y_TEST = path.join(INPUT_FOLDER, 'Prob3_ytest.csv')
+
+
+# -
 
 # ## least square solution
 # $ w_{ls} = (X^{T}X)^{-1}X^{T}y $
@@ -167,15 +175,17 @@ def adaboost_linear_classifier(x_train, y_train):
         training_error_pd.merge(training_error_upper_bound_pd, on='iteration'),
         id_vars='iteration', var_name='type',
         value_vars=['error', 'upper_bound'])
+    training_history_pd = training_history_pd.rename(columns={'value': 'training_error'})
+
+    fig, ax = plt.subplots(figsize=(12, 9))
 
     # plt.subplots(figsize=(14, 8))
-    sns.lineplot(data=training_history_pd, x='iteration', y='value', hue='type')
+    sns.lineplot(data=training_history_pd, x='iteration', y='training_error', hue='type', ax=ax)
     # Save the plot
     plt.savefig(path.join(INPUT_FOLDER, 'training_error.png'))
     # Clear the figure
     plt.clf()
 
-    # plt.subplots(figsize=(14, 8))
     plt.stem(np.average(np.vstack(classifier.data_dists), axis=0), use_line_collection=True,
              linefmt='-.')
     plt.savefig(path.join(INPUT_FOLDER, 'stem.png'))
@@ -185,20 +195,22 @@ def adaboost_linear_classifier(x_train, y_train):
     alpha_pd = pd.DataFrame(classifier.alphas, columns=['alpha']).reset_index()
     epsilon_pd = pd.DataFrame(classifier.epsilons, columns=['epsilon']).reset_index()
 
-    sns.lineplot(data=alpha_pd, x='index', y='alpha')
+    fig, ax = plt.subplots(figsize=(12, 9))
+    sns.lineplot(data=alpha_pd, x='index', y='alpha', ax=ax)
     plt.savefig(path.join(INPUT_FOLDER, 'alpha.png'))
     # Clear the figure
     plt.clf()
 
-    sns.lineplot(data=epsilon_pd, x='index', y='epsilon')
+    fig, ax = plt.subplots(figsize=(12, 9))
+    sns.lineplot(data=epsilon_pd, x='index', y='epsilon', ax=ax)
     plt.savefig(path.join(INPUT_FOLDER, 'epsilon.png'))
     # Clear the figure
     plt.clf()
 
 
-def k_means(data, k_cluster, num_of_iterations=20):
+def train_k_means(data, k_cluster, num_of_iterations=20):
     """
-    Train a k_means algorithm
+    Train a train_k_means algorithm
     :param data:
     :param k_cluster:
     :param num_of_iterations:
@@ -218,7 +230,7 @@ def k_means(data, k_cluster, num_of_iterations=20):
     return k_means_mus, np.reshape(k_means_class, (-1, 1)), history
 
 
-def plot_k_means():
+def plot_k_means_training_history():
     n = 500
     # Sample data from a Gaussian mixture model
     w = [0.2, 0.5, 0.3]
@@ -234,30 +246,30 @@ def plot_k_means():
     data = np.concatenate(data)
 
     training_history = []
-    for k_cluster in range(2, 6):
-        _, k_means_classes, history = k_means(data, k_cluster)
+    for k in range(2, 6):
+        _, k_means_classes, history = train_k_means(data, k)
         training_history.extend(history)
         # Plot K-means clusters for k is in (3, 5)
-        if k_cluster in [3, 5]:
-            plot_k_means_cluster(data, k_means_classes, k_cluster)
+        if k in [3, 5]:
+            plot_k_means_cluster(data, k_means_classes, k)
     training_history_pd = pd.DataFrame(training_history,
                                        columns=['iteration', 'K', 'learning_objective'])
     training_history_pd['K'] = training_history_pd.K.apply(str)
     fig, ax = plt.subplots(figsize=(12, 9))
     sns.lineplot(ax=ax, data=training_history_pd, x='iteration', y='learning_objective', hue='K')
     # Save the plot
-    plt.savefig(path.join(INPUT_FOLDER, 'k_means.png'))
+    plt.savefig(path.join(INPUT_FOLDER, 'train_k_means.png'))
     # Clear the figure
     plt.clf()
 
 
-def plot_k_means_cluster(data, k_means_classes, k_cluster):
+def plot_k_means_cluster(data, k_means_classes, k):
     """
-    Plot k_means clusters
+    Plot train_k_means clusters
 
     :param data:
     :param k_means_classes:
-    :param k_cluster:
+    :param k:
     :return:
     """
     k_means_cluster_pd = pd.DataFrame(np.hstack([data, k_means_classes]),
@@ -272,23 +284,209 @@ def plot_k_means_cluster(data, k_means_classes, k_cluster):
                     legend=False, ax=ax)
 
     # Save the plot
-    plt.savefig(path.join(INPUT_FOLDER, f'k_means_{k_cluster}_clusters.png'))
+    plt.savefig(path.join(INPUT_FOLDER, f'k_means_{k}_clusters.png'))
     # Clear the figure
     plt.clf()
 
 
-def main():
-    # Load data for problem 1
-    x = pd.read_csv(PROB_1_X, header=None, sep=',').values
-    y = pd.read_csv(PROB_1_Y, header=None, sep=',').values
-    adaboost_linear_classifier(x, y)
+class GaussianMixtureModel:
 
-    # Problem 2
-    plot_k_means()
+    def __init__(self, name, initial_mu, initial_sigma, initial_pi, k_cluster, num_of_iterations):
+        self._name = name
+        self._mu = initial_mu
+        self._sigma = initial_sigma
+        self._pi = initial_pi
+        self._k_cluster = k_cluster
+        self._num_of_iterations = num_of_iterations
+        self._learning_objectives = []
+
+    @property
+    def learning_objectives(self):
+        return self._learning_objectives
+
+    def train(self, data):
+
+        n, m = np.shape(data)
+
+        for iteration in range(self._num_of_iterations):
+            # calculate the probabilities
+            probabilities = np.asarray(
+                [multivariate_normal.pdf(data, mean=self._mu[i], cov=self._sigma[i],
+                                         allow_singular=True)
+                 for i in range(self._k_cluster)]).T
+            log_marginal_prob = np.sum(np.log(np.sum(probabilities * self._pi, axis=1)))
+            self._learning_objectives.append((iteration + 1, log_marginal_prob))
+
+            # E step
+            phi = probabilities * self._pi / np.expand_dims(
+                np.sum(probabilities * self._pi, axis=1), axis=1)
+            # M step
+            n_k = np.sum(phi, axis=0)
+            self._pi = n_k / n
+            self._mu = phi.T @ data / np.expand_dims(n_k, axis=1)
+
+            sigma_new = []
+            for i in range(self._k_cluster):
+                phi_k = np.expand_dims(phi[:, i], axis=1)
+                sigma_k = (phi_k * (data - self._mu[i])).T @ (
+                        data - self._mu[i]) / n_k[i]
+                sigma_new.append(sigma_k)
+            self._sigma = np.asarray(sigma_new)
+
+    def calculate_log_prob(self, data):
+        """
+        Calculate the log probability of the data
+        :param data:
+        :return:
+        """
+        # calculate the probabilities
+        probabilities = np.asarray(
+            [multivariate_normal.pdf(data, mean=self._mu[i], cov=self._sigma[i],
+                                     allow_singular=True)
+             for i in range(self._k_cluster)]).T
+        #         return logsumexp(np.log(probabilities) + np.log(self._pi), axis=1)
+        return np.sum(probabilities * self._pi, axis=1)
+
+
+def train_gaussian_mixture_model(data,
+                                 num_of_clusters,
+                                 number_of_runs=10,
+                                 number_of_iterations=30,
+                                 figure_name=None):
+    """
+
+    :param data:
+    :param num_of_clusters:
+    :param number_of_runs:
+    :param number_of_iterations:
+    :param figure_name:
+    :return:
+    """
+
+    initial_pi = np.ones([1, num_of_clusters]) / num_of_clusters
+    n, m = np.shape(data)
+    empirical_mean = np.mean(data, axis=0)
+    empirical_cov = (data - empirical_mean).T @ (data - empirical_mean) / n
+
+    all_training_objectives = []
+    all_classifiers = []
+    for run in range(1, number_of_runs + 1):
+        initial_sigma = np.asarray([empirical_cov] * num_of_clusters)
+        initial_mu = np.random.multivariate_normal(mean=empirical_mean,
+                                                   cov=empirical_cov,
+                                                   size=num_of_clusters)
+        gmm = GaussianMixtureModel(name=f'Run-{run}',
+                                   initial_mu=initial_mu,
+                                   initial_sigma=initial_sigma,
+                                   initial_pi=initial_pi,
+                                   k_cluster=num_of_clusters,
+                                   num_of_iterations=number_of_iterations)
+        gmm.train(data)
+
+        all_classifiers.append((gmm.learning_objectives[-1][1], gmm))
+        all_training_objectives.extend([(f'Run-{run}', i, l) for i, l in gmm.learning_objectives])
+
+    _, best_classifier = sorted(all_classifiers, key=lambda t: t[0], reverse=True)[0]
+
+    if figure_name:
+        all_training_objectives_pd = pd.DataFrame(all_training_objectives,
+                                                  columns=['run', 'iteration',
+                                                           'learning_objective'])
+
+        fig, ax = plt.subplots(figsize=(12, 9))
+
+        sns.lineplot(data=all_training_objectives_pd[all_training_objectives_pd.iteration > 5],
+                     x='iteration', y='learning_objective', hue='run', ax=ax)
+
+        # Save the plot
+        plt.savefig(path.join(INPUT_FOLDER, f'learning_objective_{figure_name}.png'))
+
+        # Clear the figure
+        plt.clf()
+
+    return best_classifier
+
+
+def main():
+    np.random.seed(100)
+
+    # # Load data for problem 1
+    # x = pd.read_csv(PROB_1_X, header=None, sep=',').values
+    # y = pd.read_csv(PROB_1_Y, header=None, sep=',').values
+    # adaboost_linear_classifier(x, y)
+    #
+    # # Problem 2
+    # plot_k_means_training_history()
+
+    # Problem 3
+    x_train = pd.read_csv(PROB_3_X_TRAIN, header=None, sep=',').values
+    y_train = pd.read_csv(PROB_3_Y_TRAIN, header=None, sep=',').values
+
+    x_test = pd.read_csv(PROB_3_X_TEST, header=None, sep=',').values
+    y_test = pd.read_csv(PROB_3_Y_TEST, header=None, sep=',').values
+
+    x_train_spam = x_train[np.squeeze(y_train == 1)]
+    x_train_non_spam = x_train[np.squeeze(y_train == 0)]
+
+    prior_0 = np.sum(y_train == 0) / len(y_train)
+    prior_1 = np.sum(y_train == 1) / len(y_train)
+
+    train_gaussian_mixture_model(data=x_train_spam, num_of_clusters=3,
+                                 figure_name='spam')
+    train_gaussian_mixture_model(data=x_train_non_spam, num_of_clusters=3,
+                                 figure_name='non_spam')
+
+    for k in range(1, 5):
+        spam_gmm = train_gaussian_mixture_model(data=x_train_spam, num_of_clusters=k)
+        non_spam_gmm = train_gaussian_mixture_model(data=x_train_non_spam, num_of_clusters=k)
+        y_hat = (prior_1 * spam_gmm.calculate_log_prob(
+            x_test) > prior_0 * non_spam_gmm.calculate_log_prob(x_test)).astype(int)
+        print(
+            f'number_of_cluster: {k} accuracy: {accuracy_score(y_test, y_hat)} \n {confusion_matrix(y_test, y_hat)}')
 
 
 if __name__ == '__main__':
     """
-    Author: Chao Pang 
+    Author: Chao Pang
     """
     main()
+
+#     # Problem 3
+#     x_train = pd.read_csv(PROB_3_X_TRAIN, header=None, sep=',').values
+#     y_train = pd.read_csv(PROB_3_Y_TRAIN, header=None, sep=',').values
+#
+#     x_train_spam = x_train[np.squeeze(y_train == 1)]
+#     y_train_spam = y_train[np.squeeze(y_train == 1)]
+#
+#     x_train_non_spam = x_train[np.squeeze(y_train == 0)]
+#     y_train_non_spam = y_train[np.squeeze(y_train == 0)]
+#
+# k = 3
+#
+# x_train_spam = x_train[np.squeeze(y_train == 1)]
+# y_train_spam = y_train[np.squeeze(y_train == 1)]
+#
+# x_train_non_spam = x_train[np.squeeze(y_train == 0)]
+# y_train_non_spam = y_train[np.squeeze(y_train == 0)]
+#
+# prior_0 = np.sum(y_train == 0) / len(y_train)
+# prior_1 = np.sum(y_train == 1) / len(y_train)
+#
+# spam_gmm = train_gaussian_mixture_model(data=x_train_spam, num_of_clusters=k)
+# non_spam_gmm = train_gaussian_mixture_model(data=x_train_non_spam, num_of_clusters=k)
+#
+# for k in range(1, 5):
+#     spam_gmm = train_gaussian_mixture_model(data=x_train_spam, num_of_clusters=k)
+#     non_spam_gmm = train_gaussian_mixture_model(data=x_train_non_spam, num_of_clusters=k)
+#     y_hat = (prior_1 * spam_gmm.calculate_log_prob(x_test) > prior_0 * non_spam_gmm.calculate_log_prob(x_test)).astype(int)
+#     print(f'number_of_cluster: {k} accuracy: {accuracy_score(y_test, y_hat)}')
+#
+# for k in range(1, 5):
+#     spam_gmm = GaussianMixture(n_components=k).fit(x_train_spam)
+#     non_spam_gmm = GaussianMixture(n_components=k).fit(x_train_non_spam)
+#     spam_log_likelihood = np.log(prior_1) + spam_gmm.score_samples(x_test)
+#     non_spam_log_likelihood = np.log(prior_0) + non_spam_gmm.score_samples(x_test)
+#     y_hat = (spam_log_likelihood > non_spam_log_likelihood).astype(int)
+#     print(f'number_of_cluster: {k} accuracy: {accuracy_score(y_test, y_hat)}')
+#
+#
