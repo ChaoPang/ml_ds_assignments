@@ -231,6 +231,10 @@ def train_k_means(data, k_cluster, num_of_iterations=20):
 
 
 def plot_k_means_training_history():
+    """
+    Plot k_means training objective and clusters for k equals 3 and 5
+    :return:
+    """
     n = 500
     # Sample data from a Gaussian mixture model
     w = [0.2, 0.5, 0.3]
@@ -344,7 +348,6 @@ class GaussianMixtureModel:
             [multivariate_normal.pdf(data, mean=self._mu[i], cov=self._sigma[i],
                                      allow_singular=True)
              for i in range(self._k_cluster)]).T
-        #         return logsumexp(np.log(probabilities) + np.log(self._pi), axis=1)
         return np.sum(probabilities * self._pi, axis=1)
 
 
@@ -354,6 +357,8 @@ def train_gaussian_mixture_model(data,
                                  number_of_iterations=30,
                                  figure_name=None):
     """
+    Train a gassian mixture model given a number of clusters and the data. Return the best
+    classifier based on their learning objectives
 
     :param data:
     :param num_of_clusters:
@@ -407,35 +412,24 @@ def train_gaussian_mixture_model(data,
     return best_classifier
 
 
-def main():
-    np.random.seed(100)
+def gmm_bayes_classifier(x_train, y_train, x_test, y_test):
+    """
+    Train four Bayes classifiers whose data likelihood function is a k gaussian mixture model
 
-    # # Load data for problem 1
-    # x = pd.read_csv(PROB_1_X, header=None, sep=',').values
-    # y = pd.read_csv(PROB_1_Y, header=None, sep=',').values
-    # adaboost_linear_classifier(x, y)
-    #
-    # # Problem 2
-    # plot_k_means_training_history()
-
-    # Problem 3
-    x_train = pd.read_csv(PROB_3_X_TRAIN, header=None, sep=',').values
-    y_train = pd.read_csv(PROB_3_Y_TRAIN, header=None, sep=',').values
-
-    x_test = pd.read_csv(PROB_3_X_TEST, header=None, sep=',').values
-    y_test = pd.read_csv(PROB_3_Y_TEST, header=None, sep=',').values
-
+    :param x_train:
+    :param y_train:
+    :param x_test:
+    :param y_test:
+    :return:
+    """
     x_train_spam = x_train[np.squeeze(y_train == 1)]
     x_train_non_spam = x_train[np.squeeze(y_train == 0)]
-
     prior_0 = np.sum(y_train == 0) / len(y_train)
     prior_1 = np.sum(y_train == 1) / len(y_train)
-
     train_gaussian_mixture_model(data=x_train_spam, num_of_clusters=3,
                                  figure_name='spam')
     train_gaussian_mixture_model(data=x_train_non_spam, num_of_clusters=3,
                                  figure_name='non_spam')
-
     for k in range(1, 5):
         spam_gmm = train_gaussian_mixture_model(data=x_train_spam, num_of_clusters=k)
         non_spam_gmm = train_gaussian_mixture_model(data=x_train_non_spam, num_of_clusters=k)
@@ -445,48 +439,29 @@ def main():
             f'number_of_cluster: {k} accuracy: {accuracy_score(y_test, y_hat)} \n {confusion_matrix(y_test, y_hat)}')
 
 
+def main():
+    np.random.seed(100)
+
+    # Load data for problem 1
+    x = pd.read_csv(PROB_1_X, header=None, sep=',').values
+    y = pd.read_csv(PROB_1_Y, header=None, sep=',').values
+    adaboost_linear_classifier(x, y)
+
+    # Problem 2
+    plot_k_means_training_history()
+
+    # Problem 3
+    x_train = pd.read_csv(PROB_3_X_TRAIN, header=None, sep=',').values
+    y_train = pd.read_csv(PROB_3_Y_TRAIN, header=None, sep=',').values
+
+    x_test = pd.read_csv(PROB_3_X_TEST, header=None, sep=',').values
+    y_test = pd.read_csv(PROB_3_Y_TEST, header=None, sep=',').values
+
+    gmm_bayes_classifier(x_train, y_train, x_test, y_test)
+
+
 if __name__ == '__main__':
     """
     Author: Chao Pang
     """
     main()
-
-#     # Problem 3
-#     x_train = pd.read_csv(PROB_3_X_TRAIN, header=None, sep=',').values
-#     y_train = pd.read_csv(PROB_3_Y_TRAIN, header=None, sep=',').values
-#
-#     x_train_spam = x_train[np.squeeze(y_train == 1)]
-#     y_train_spam = y_train[np.squeeze(y_train == 1)]
-#
-#     x_train_non_spam = x_train[np.squeeze(y_train == 0)]
-#     y_train_non_spam = y_train[np.squeeze(y_train == 0)]
-#
-# k = 3
-#
-# x_train_spam = x_train[np.squeeze(y_train == 1)]
-# y_train_spam = y_train[np.squeeze(y_train == 1)]
-#
-# x_train_non_spam = x_train[np.squeeze(y_train == 0)]
-# y_train_non_spam = y_train[np.squeeze(y_train == 0)]
-#
-# prior_0 = np.sum(y_train == 0) / len(y_train)
-# prior_1 = np.sum(y_train == 1) / len(y_train)
-#
-# spam_gmm = train_gaussian_mixture_model(data=x_train_spam, num_of_clusters=k)
-# non_spam_gmm = train_gaussian_mixture_model(data=x_train_non_spam, num_of_clusters=k)
-#
-# for k in range(1, 5):
-#     spam_gmm = train_gaussian_mixture_model(data=x_train_spam, num_of_clusters=k)
-#     non_spam_gmm = train_gaussian_mixture_model(data=x_train_non_spam, num_of_clusters=k)
-#     y_hat = (prior_1 * spam_gmm.calculate_log_prob(x_test) > prior_0 * non_spam_gmm.calculate_log_prob(x_test)).astype(int)
-#     print(f'number_of_cluster: {k} accuracy: {accuracy_score(y_test, y_hat)}')
-#
-# for k in range(1, 5):
-#     spam_gmm = GaussianMixture(n_components=k).fit(x_train_spam)
-#     non_spam_gmm = GaussianMixture(n_components=k).fit(x_train_non_spam)
-#     spam_log_likelihood = np.log(prior_1) + spam_gmm.score_samples(x_test)
-#     non_spam_log_likelihood = np.log(prior_0) + non_spam_gmm.score_samples(x_test)
-#     y_hat = (spam_log_likelihood > non_spam_log_likelihood).astype(int)
-#     print(f'number_of_cluster: {k} accuracy: {accuracy_score(y_test, y_hat)}')
-#
-#
