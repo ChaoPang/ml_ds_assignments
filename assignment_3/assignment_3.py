@@ -221,9 +221,12 @@ def train_k_means(data, k_cluster, num_of_iterations=20):
     k_means_mus = np.random.rand(k_cluster, m)
     k_means_class = None
     for iteration in range(num_of_iterations):
-        all_distance = euclidean_distances(data, k_means_mus, squared=True)
-        k_means_class = np.argmin(all_distance, axis=1)
-        learning_objective = np.sum(np.min(all_distance, axis=1))
+        # Compute the pairwise euclidean distances between data k_means_mus
+        all_pairwise_distances = euclidean_distances(data, k_means_mus, squared=True)
+        # assigning the index of the smallest euclidean distance as the class
+        k_means_class = np.argmin(all_pairwise_distances, axis=1)
+        learning_objective = np.sum(np.min(all_pairwise_distances, axis=1))
+        # Updating the means
         for i in range(k_cluster):
             k_means_mus[i] = np.mean(data[k_means_class == i], axis=0)
         history.append((iteration + 1, str(k_cluster) + '-cluster', learning_objective))
@@ -241,9 +244,11 @@ def plot_k_means_training_history():
     mu = np.asarray([[0, 0], [3, 0], [0, 3]])
     cov = np.reshape([1, 0, 0, 1], (2, 2))
 
+    # Randomly generate 500 indexes
     randomly_generated_indexes = np.random.choice(a=[0, 1, 2], size=n, p=w)
     unique, counts = np.unique(randomly_generated_indexes, return_counts=True)
     data = []
+    # Sample data from the corresponding Gaussian Distribution
     for index, count in zip(unique, counts):
         print(f'{index}: {count}')
         data.append(np.random.multivariate_normal(mean=mu[index], cov=cov, size=count))
@@ -313,17 +318,18 @@ class GaussianMixtureModel:
         n, m = np.shape(data)
 
         for iteration in range(self._num_of_iterations):
-            # calculate the probabilities
-            probabilities = np.asarray(
+            # calculate the probability densities across all clusters
+            probability_densities = np.asarray(
                 [multivariate_normal.pdf(data, mean=self._mu[i], cov=self._sigma[i],
                                          allow_singular=True)
                  for i in range(self._k_cluster)]).T
-            log_marginal_prob = np.sum(np.log(np.sum(probabilities * self._pi, axis=1)))
+            # Calculate the log of the marginal probability
+            log_marginal_prob = np.sum(np.log(np.sum(probability_densities * self._pi, axis=1)))
             self._learning_objectives.append((iteration + 1, log_marginal_prob))
 
             # E step
-            phi = probabilities * self._pi / np.expand_dims(
-                np.sum(probabilities * self._pi, axis=1), axis=1)
+            phi = probability_densities * self._pi / np.expand_dims(
+                np.sum(probability_densities * self._pi, axis=1), axis=1)
             # M step
             n_k = np.sum(phi, axis=0)
             self._pi = n_k / n
@@ -337,9 +343,9 @@ class GaussianMixtureModel:
                 sigma_new.append(sigma_k)
             self._sigma = np.asarray(sigma_new)
 
-    def calculate_log_prob(self, data):
+    def calculate_prob(self, data):
         """
-        Calculate the log probability of the data
+        Calculate the probability of the data
         :param data:
         :return:
         """
@@ -388,11 +394,15 @@ def train_gaussian_mixture_model(data,
                                    num_of_iterations=number_of_iterations)
         gmm.train(data)
 
+        # Storing the last value of the learning objective and the classifier into a tuple,
+        # which is added into all_classifiers
         all_classifiers.append((gmm.learning_objectives[-1][1], gmm))
         all_training_objectives.extend([(f'Run-{run}', i, l) for i, l in gmm.learning_objectives])
 
+    # Getting the best classifier based on the best learning objective
     _, best_classifier = sorted(all_classifiers, key=lambda t: t[0], reverse=True)[0]
 
+    # Draw the plot if the figure_name is provided
     if figure_name:
         all_training_objectives_pd = pd.DataFrame(all_training_objectives,
                                                   columns=['run', 'iteration',
@@ -426,15 +436,18 @@ def gmm_bayes_classifier(x_train, y_train, x_test, y_test):
     x_train_non_spam = x_train[np.squeeze(y_train == 0)]
     prior_0 = np.sum(y_train == 0) / len(y_train)
     prior_1 = np.sum(y_train == 1) / len(y_train)
+    # Generating the learning objective for spam
     train_gaussian_mixture_model(data=x_train_spam, num_of_clusters=3,
                                  figure_name='spam')
+    # Generating the learning objective for non-spam
     train_gaussian_mixture_model(data=x_train_non_spam, num_of_clusters=3,
                                  figure_name='non_spam')
+    # Train k-gmm for spam and non-spam, run the bayes classifier for k = 1,2,3,4
     for k in range(1, 5):
         spam_gmm = train_gaussian_mixture_model(data=x_train_spam, num_of_clusters=k)
         non_spam_gmm = train_gaussian_mixture_model(data=x_train_non_spam, num_of_clusters=k)
-        y_hat = (prior_1 * spam_gmm.calculate_log_prob(
-            x_test) > prior_0 * non_spam_gmm.calculate_log_prob(x_test)).astype(int)
+        y_hat = (prior_1 * spam_gmm.calculate_prob(
+            x_test) > prior_0 * non_spam_gmm.calculate_prob(x_test)).astype(int)
         print(
             f'number_of_cluster: {k} accuracy: {accuracy_score(y_test, y_hat)} \n {confusion_matrix(y_test, y_hat)}')
 
