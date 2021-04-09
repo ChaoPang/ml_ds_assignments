@@ -19,12 +19,17 @@ PROB_2_VOCAB = path.join(INPUT_FOLDER, 'nyt_vocab.dat')
 
 # +
 def load_cfb_data():
-    # Load the vocab and assume the index is 0 based
-    vocab = dict()
+    """
+    Load the CFB data and its team dictionary
+    :return:
+    """
+
+    # Load the team_dict and assume the index is 0 based
+    team_dict = dict()
     with open(PROB_1_VOCAB, 'r', encoding='utf-8-sig') as f:
         for i, line in enumerate(f):
-            vocab[i] = line.strip()
-    n_of_teams = len(vocab)
+            team_dict[i] = line.strip()
+    n_of_teams = len(team_dict)
     # +
     M_hat = np.zeros((n_of_teams, n_of_teams))
     with open(PROB_1_DATA, 'r', encoding='utf-8-sig') as f:
@@ -51,16 +56,23 @@ def load_cfb_data():
                     team_a_points + team_b_points)
     M = M_hat / np.expand_dims(np.sum(M_hat, axis=1), axis=-1)
 
-    return M, vocab
+    return M, team_dict
 
 
-def rank_cfb_teams(M, vocab):
-    n_of_teams = len(vocab)
+def rank_cfb_teams(M, team_dict):
+    """
+    Rank the cfb team based on their scores and game results
+    :param M:
+    :param team_dict:
+    :return:
+    """
+    n_of_teams = len(team_dict)
     w_t = np.ones((1, n_of_teams)) / n_of_teams
     for t in range(1, 10001):
         w_t = w_t @ M
         if t in [10, 100, 1000, 10000]:
-            print([(vocab[i], np.squeeze(w_t)[i]) for i in np.argsort(np.squeeze(w_t))[::-1][:25]])
+            print([(team_dict[i], np.squeeze(w_t)[i]) for i in
+                   np.argsort(np.squeeze(w_t))[::-1][:25]])
             print()
 
     eigenvalues, eigenvectors = sla.eigs(M.T, k=1, which='LM',
@@ -179,17 +191,14 @@ def run_non_negative_matrix_factorization(X, vocab, n_topics, n_iter):
 
 
 def main():
-
     # Set the seed
     np.random.seed(100)
 
-    # Load data for problem 1
-    M, team_vocab = load_cfb_data()
-    rank_cfb_teams(M, team_vocab)
+    # Problem 1
+    rank_cfb_teams(*load_cfb_data())
 
     # Problem 2
-    X, word_vocab = load_nyt_data()
-    run_non_negative_matrix_factorization(X, word_vocab, n_topics=25, n_iter=100)
+    run_non_negative_matrix_factorization(*load_nyt_data(), n_topics=25, n_iter=100)
 
 
 # -
