@@ -59,6 +59,20 @@ def load_cfb_data():
     return M, team_dict
 
 
+def print_team_ranking(w_t, team_dict, name):
+    print('Rank\tTeam\tprobability')
+    rows = []
+    for rank, index in enumerate(np.argsort(np.squeeze(w_t))[::-1][:25]):
+        print(f'{rank + 1}\t{team_dict[index]}\t{"{:.4f}".format(np.squeeze(w_t)[index])}')
+        rows.append((rank + 1, team_dict[index], float("{:.4f}".format(np.squeeze(w_t)[index]))))
+    print()
+    results_pd = pd.DataFrame(rows, columns=['Rank', 'Team', 'Probability'])
+
+    with open(path.join(INPUT_FOLDER, name), 'w') as opened_file:
+        opened_file.write(results_pd.to_latex(caption=name,
+                                              index=False))
+
+
 def rank_cfb_teams(M, team_dict):
     """
     Rank the cfb team based on their scores and game results
@@ -71,9 +85,7 @@ def rank_cfb_teams(M, team_dict):
     for t in range(1, 10001):
         w_t = w_t @ M
         if t in [10, 100, 1000, 10000]:
-            print([(team_dict[i], np.squeeze(w_t)[i]) for i in
-                   np.argsort(np.squeeze(w_t))[::-1][:25]])
-            print()
+            print_team_ranking(w_t, team_dict, f'rankings_w_{t}')
 
     eigenvalues, eigenvectors = sla.eigs(M.T, k=1, which='LM',
                                          v0=np.random.uniform(0, 1, n_of_teams))
@@ -82,12 +94,15 @@ def rank_cfb_teams(M, team_dict):
     assert np.prod(np.sign(eigenvectors)).real > 0
 
     w_inf = np.squeeze((eigenvectors / np.sum(eigenvectors, axis=0)).real)
+    print_team_ranking(w_inf, team_dict, f'rankings_w_infinity')
+
     distances = []
     w_t = np.ones((1, n_of_teams)) / n_of_teams
     for t in range(1, 10001):
         w_t = w_t @ M
-        distances.append((t, np.linalg.norm(w_inf - np.squeeze(w_t))))
+        distances.append((t, np.linalg.norm(w_inf - np.squeeze(w_t), ord=1)))
 
+    print(f'The last l1 norm is {distances[-1][-1]}')
     # Plot the learning objective
     distance_pd = pd.DataFrame(distances, columns=['iteration', 'l1_norm'])
 
@@ -180,14 +195,55 @@ def run_non_negative_matrix_factorization(X, vocab, n_topics, n_iter):
 
     normalized_W = W / np.sum(W, axis=0)
 
+    write_top_words_to_files(normalized_W, vocab)
+
+
+def write_top_words_to_files(normalized_W, vocab):
+    """
+    Write the raw data to a csv file and also write to a latex table
+
+    :param normalized_W:
+    :param vocab:
+    :return:
+    """
     topics = []
     for i in range(np.shape(normalized_W)[1]):
-        print(f'Topic {i + 1}')
-        print('\n'.join([f'{vocab[j]} : {normalized_W[j, i]}' for j in
-                         np.argsort(normalized_W[:, i])[::-1][:10]]))
-        print()
-        topics.extend([(i + 1, vocab[j], normalized_W[j, i]) for j in
+        topics.extend([(i + 1, vocab[j], float("{:.4f}".format(normalized_W[j, i]))) for j in
                        np.argsort(normalized_W[:, i])[::-1][:10]])
+    topics_pd = pd.DataFrame(topics, columns=['topic', 'word', 'weight'])
+    topics_pd['rank'] = topics_pd.groupby("topic")["weight"].rank('first', ascending=False)
+    topics_pd['rank'] = topics_pd['rank'].astype(int)
+    # Write the raw data to a CSV file
+    topics_pd.to_csv(path.join(INPUT_FOLDER, 'words_top_25_raw'), index=False)
+
+    # Combine the word and its corresponding probability
+    group_results = {}
+    for i, (name, group) in enumerate(topics_pd.groupby('topic')):
+        group_id = i // 5
+        if group_id not in group_results:
+            group_results[group_id] = []
+        group_results[group_id].append(
+            (name, group.apply(lambda r: f'{r[1]} {r[2]}', axis=1).to_list()))
+
+    # create each row in the latex table
+    latex_table_rows = []
+    for i, (group_id, group_result_tuple) in enumerate(group_results.items()):
+        if i != 0:
+            latex_table_rows.append(' & '.join([''] * 5))
+        topics, group_result = zip(*group_result_tuple)
+        _, n_words = np.shape(np.asarray(group_result))
+        header = ' & '.join([f'\textbf{{Topic {topic}}}' for topic in topics])
+        latex_table_rows.append(f'\toprule {header}')
+        body = [' & '.join(np.asarray(group_result)[:, i]) for i in range(n_words)]
+        body[0] = f'\midrule {body[0]}'
+        latex_table_rows.extend(body)
+
+    # Write the table content to a latex table
+    with pd.option_context("max_colwidth", 10000):
+        with open(path.join(INPUT_FOLDER, 'words_top_25_latex'), 'w') as opened_file:
+            opened_file.write(
+                pd.DataFrame(latex_table_rows).to_latex(index=False, escape=False).replace(
+                    '\hline \\\\', '\hline'))
 
 
 def main():
@@ -201,40 +257,8 @@ def main():
     run_non_negative_matrix_factorization(*load_nyt_data(), n_topics=25, n_iter=100)
 
 
-# -
-
 if __name__ == '__main__':
     """
     Author: Chao Pang
     """
     main()
-#
-# # +
-# M, vocab = load_cfb_data()
-# n_of_teams = len(vocab)
-# w_t = np.ones((1, n_of_teams)) / n_of_teams
-# for t in range(1, 10001):
-#     w_t = w_t @ M
-#     if t in [10, 100, 1000, 10000]:
-#         print([(vocab[i], np.squeeze(w_t)[i]) for i in np.argsort(np.squeeze(w_t))[::-1][:25]])
-#         print()
-# np.random.seed(100)
-#
-# eigenvalues, eigenvectors = sla.eigs(M.T, k=1, which='LM', v0=np.random.uniform(0, 1, len(vocab)))
-#
-# # assert that all entries in the eigenvector have the same sign
-# assert np.prod(np.sign(eigenvectors)).real > 0
-#
-# w_inf = np.squeeze((eigenvectors / np.sum(eigenvectors, axis=0)).real)
-#
-# distances = []
-# w_t = np.ones((1, n_of_teams)) / n_of_teams
-# for t in range(1, 10001):
-#     w_t = w_t @ M
-#     distances.append((t, np.linalg.norm(w_inf - np.squeeze(w_t))))
-#
-# # Plot the learning objective
-# distance_pd = pd.DataFrame(distances, columns=['iteration', 'l1_norm'])
-#
-# sns.lineplot(data=distance_pd, x='iteration', y='l1_norm')
-# # -
